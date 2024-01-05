@@ -23,7 +23,7 @@ export const documento = 'INE'; // DNI
 
 export const nameImpuesto = 'IVA'; // IGV
 
-export const codigoPhonePais = '51';
+export const codigoPhonePais = '52';
 
 export const MONTOS_BASE = [
   { monto: 1000, cantidad: '', total: 0 },
