@@ -5,9 +5,8 @@
 import axios from 'axios';
 import React, { useState } from 'react';
 import './promocion.scss';
-import Pet from './pet.jpg';
 import { useSelector } from 'react-redux';
-import moment from 'moment';
+import Cupon from '../../Cupon/Cupon';
 
 const Promocion = ({ /*onRedirect,*/ onAddCupon }) => {
   const infoPromocion = useSelector((state) => state.promocion.infoPromocion);
@@ -65,7 +64,7 @@ const Promocion = ({ /*onRedirect,*/ onAddCupon }) => {
           </button>
         </div>
       ) : null}
-      <div style={{ display: givenPromotions.length > 0 ? 'flex' : 'grid', gap: '10px' }}>
+      <div className="body-promos-cupones">
         <div className="list-promos">
           {infoPromocion?.map((p) => (
             <button
@@ -82,23 +81,11 @@ const Promocion = ({ /*onRedirect,*/ onAddCupon }) => {
         </div>
         {givenPromotions.length > 0 ? (
           <div className="container-promociones">
-            <div className="item-promo">
-              {givenPromotions?.map((promo, index) => (
-                <div key={index}>
-                  <div className="info-promo">
-                    <div>
-                      <h1>PROMOCION:</h1>
-                      <h2 style={{ fontSize: '0.8em', textAlign: 'justify' }}>{promo.descripcion}</h2>
-                      <h2 className="cod-i">codigo: {promo.codigoCupon}</h2>
-                    </div>
-                    <div>
-                      <img src={Pet} alt="" />
-                    </div>
-                  </div>
-                </div>
-              ))}
-              <h2 style={{ float: 'right', fontSize: '0.9em' }}>{moment().format('D [de] MMMM[, del] YYYY')}</h2>
-            </div>
+            {givenPromotions?.map((promo, index) => (
+              <React.Fragment key={index}>
+                <Cupon infoPromo={promo} />
+              </React.Fragment>
+            ))}
           </div>
         ) : null}
       </div>

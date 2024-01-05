@@ -2,27 +2,22 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable react/display-name */
 import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
-import { DateDetail, DiasAttencion, HoraAttencion, roundDecimal } from '../../../../../../../utils/functions';
+import { DiasAttencion, HoraAttencion, calcularFechaFutura, roundDecimal } from '../../../../../../../utils/functions';
 import './ticket.scss';
 
 import Pet from './pet.jpg';
 import AhorroPet from './petAhorro.jpg';
-
-import axios from 'axios';
 import moment from 'moment';
+import axios from 'axios';
+import { nameImpuesto, politicaAbandono, simboloMoneda } from '../../../../../../../services/global';
 
 const Ticket = React.forwardRef((props, ref) => {
+  const { forW, infoOrden, InfoNegocio } = props;
   const [listPromos, setListPromos] = useState([]);
-  const { id } = useParams();
-
-  const infoOrden = useSelector((state) => state.orden.registered.find((item) => item._id === id));
-  const InfoNegocio = useSelector((state) => state.negocio.infoNegocio);
 
   const montoDelivery = (dataC) => {
     if (dataC.Modalidad === 'Delivery') {
-      return infoOrden.Producto.find((p) => p.categoria === 'Delivery').total;
+      return infoOrden.Producto.find((p) => p.producto === 'Delivery').total;
     } else {
       return 0;
     }
@@ -37,6 +32,51 @@ const Ticket = React.forwardRef((props, ref) => {
       console.error(`No se pudo obtener información de la promoción - ${error}`);
       throw error; // Lanza el error para que pueda ser capturado por Promise.all
     }
+  };
+
+  const handleShowDateTime = (date, hour) => {
+    // Concatena la fecha y hora
+    const datetimeString = `${date} ${hour}`;
+
+    // Parsea la fecha y hora usando Moment.js
+    const dateTime = moment(datetimeString, 'YYYY-MM-DD HH:mm');
+
+    // Formatea la fecha y la hora según los requisitos
+    const formattedDate = dateTime.format('D [de] MMMM, YYYY');
+    const formattedTime = dateTime.format('dddd - HH:mm');
+
+    // Construye el objeto de respuesta
+    const result = {
+      FInfoD: formattedDate,
+      SInfoD: formattedTime,
+    };
+
+    return result;
+  };
+
+  const spaceLine = (txt) => {
+    // Separar el string por saltos de línea ("\n")
+    const lines = txt.split('\n');
+
+    // Devolver un elemento <ol> con elementos <li> numerados para cada línea
+    return (
+      <ol className="formatted-list">
+        {lines.map((line, index) => (
+          <li key={index} className="formatted-line">
+            <p>
+              {line.includes('✔ ') ? (
+                <>
+                  {line.replace('✔ ', ``)}
+                  <br />
+                </>
+              ) : (
+                line
+              )}
+            </p>
+          </li>
+        ))}
+      </ol>
+    );
   };
 
   useEffect(() => {
@@ -82,7 +122,7 @@ const Ticket = React.forwardRef((props, ref) => {
                       {Object.keys(InfoNegocio).length > 0 ? (
                         <>
                           {DiasAttencion(InfoNegocio?.horario.dias)}
-                          <hr style={{ visibility: 'hidden' }} />
+                          <hr />
                           {HoraAttencion(InfoNegocio?.horario.horas)}
                         </>
                       ) : null}
@@ -98,20 +138,37 @@ const Ticket = React.forwardRef((props, ref) => {
               </table>
             </div>
             <div className="info-client">
-              <h1 className="cod-rec">ORDEN DE SERVICIO : {String(infoOrden.codRecibo).padStart(4, '0')}</h1>
+              <div className="cod-rec">
+                <h1>ORDEN DE SERVICIO</h1>
+                <h1>- {String(infoOrden.codRecibo).padStart(4, '0')} -</h1>
+              </div>
               <div className="info-detail">
                 <table className="tb-date">
                   <tbody>
                     <tr>
-                      <td>Ingreso:</td>
+                      <td>Recojo:</td>
                       <td>
-                        {DateDetail(infoOrden.dateRecepcion.fecha)} - {infoOrden.dateRecepcion.hora}
+                        <div className="date-time">
+                          <span>
+                            {handleShowDateTime(infoOrden.dateRecepcion.fecha, infoOrden.dateRecepcion.hora).FInfoD}
+                          </span>
+                          <span>
+                            {handleShowDateTime(infoOrden.dateRecepcion.fecha, infoOrden.dateRecepcion.hora).SInfoD}
+                          </span>
+                        </div>
                       </td>
                     </tr>
                     <tr>
                       <td>Entrega:</td>
                       <td>
-                        {DateDetail(infoOrden.datePrevista.fecha)} - {infoOrden.datePrevista.hora}
+                        <div className="date-time">
+                          <span>
+                            {handleShowDateTime(infoOrden.datePrevista.fecha, infoOrden.datePrevista.hora).FInfoD}
+                          </span>
+                          <span>
+                            {handleShowDateTime(infoOrden.datePrevista.fecha, infoOrden.datePrevista.hora).SInfoD}
+                          </span>
+                        </div>
                       </td>
                     </tr>
                   </tbody>
@@ -137,20 +194,27 @@ const Ticket = React.forwardRef((props, ref) => {
                     <tr>
                       <th>ID</th>
                       <th>Item</th>
-                      <th>Cantidad</th>
+                      <th>Cant</th>
                       {/* <th>{""}</th> */}
-                      <th>Subtotal</th>
+                      <th>Subt</th>
                     </tr>
                   </thead>
                   <tbody>
                     {infoOrden.Producto.filter((p) => p.categoria !== 'Delivery').map((p, index) => (
-                      <tr key={`${infoOrden._id}-${index}`}>
-                        <td>{index + 1}</td>
-                        <td>{p.producto}</td>
-                        <td>{roundDecimal(p.cantidad)} </td>
-                        {/* <td>{""}</td> */}
-                        <td>{roundDecimal(p.total)}</td>
-                      </tr>
+                      <React.Fragment key={`${infoOrden._id}-${index}`}>
+                        <tr>
+                          <td>{index + 1}</td>
+                          <td>{p.producto}</td>
+                          <td>{roundDecimal(p.cantidad)} </td>
+                          {/* <td>{""}</td> */}
+                          <td>{roundDecimal(p.total)}</td>
+                        </tr>
+                        {forW && p.descripcion ? (
+                          <tr className="fila_descripcion">
+                            <td colSpan="4">{spaceLine(p.descripcion)}</td>
+                          </tr>
+                        ) : null}
+                      </React.Fragment>
                     ))}
                   </tbody>
                   <tfoot>
@@ -169,7 +233,9 @@ const Ticket = React.forwardRef((props, ref) => {
                     </tr>
                     {infoOrden.factura ? (
                       <tr>
-                        <td colSpan="3">IGV ({infoOrden.cargosExtras.igv.valor * 100} %) :</td>
+                        <td colSpan="3">
+                          {nameImpuesto} ({infoOrden.cargosExtras.igv.valor * 100} %) :
+                        </td>
                         <td>{infoOrden.cargosExtras.igv.importe}</td>
                       </tr>
                     ) : null}
@@ -187,16 +253,18 @@ const Ticket = React.forwardRef((props, ref) => {
                   <div className="space-ahorro">
                     <h2 className="title">! Felicidades Ahorraste S/{infoOrden?.descuento} ¡</h2>
                     <div className="info-promo">
-                      <div className="list-promo">
-                        <span>Usando nuestras promociones :</span>
-                        <ul>
-                          {infoOrden.cargosExtras.beneficios.promociones.map((p) => (
-                            <li key={p.codigoCupon}>{p.descripcion}</li>
-                          ))}
-                        </ul>
-                      </div>
-                      <div className="img-pet">
-                        <img src={AhorroPet} alt="" />
+                      <span>Usando nuestras promociones :</span>
+                      <div className="body-ahorro">
+                        <div className="list-promo">
+                          <ul>
+                            {infoOrden.cargosExtras.beneficios.promociones.map((p) => (
+                              <li key={p.codigoCupon}>{p.descripcion}</li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div className="img-pet">
+                          <img src={AhorroPet} alt="" />
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -204,40 +272,37 @@ const Ticket = React.forwardRef((props, ref) => {
               </div>
             </div>
             <div className="monto-final">
-              <h2>Total : s/ {roundDecimal(infoOrden.totalNeto)}</h2>
-              <h3 className="estado">{infoOrden.Pago === 'Pagado' ? 'PAGADO' : 'PENDIENTE'}</h3>
+              <h2>
+                Total : {simboloMoneda} {roundDecimal(infoOrden.totalNeto)}
+              </h2>
+              <h3 className={`${infoOrden.factura ? null : 'sf'} estado`}>
+                {infoOrden.Pago === 'Pagado' ? 'PAGADO' : 'PENDIENTE'}
+              </h3>
+              {infoOrden.factura ? <h2 className="cangeo-factura">Cangear Orden de Servicio por Factura</h2> : null}
             </div>
             <p className="aviso">
-              NOTA: <span>El plazo maximo para retirar las prendas es de 20 dias</span> despues de entregada a la
-              lavanderia; vencido el plazo se donara a instituciones de caridad.No hay lugar a reclamo una ves retirada
-              la prenda No nos reposabilizamos por prendas que se destiñan por malos tintes, botones o adornos que no
-              resistan al lavado o planchado, por las prendas que se deterioren por estar demasiado usadas, tejidos y
-              confecciones defectuosas. La indemnizacion por ropa perdida o malograda se ajusta de acuerdo a la ley R.S.
-              2322 que equivale al 20% del valor de la prenda No nos responsabilizamos por dinero u objetos de valor
-              dejados en la prenda.
+              NOTA: <span>{politicaAbandono.mResaltado}</span>
+              {politicaAbandono.mGeneral}
             </p>
           </div>
           {listPromos.length > 0 ? (
             <div className="container-promociones">
-              <div className="item-promo">
-                {listPromos.map((promo, index) => (
-                  <div key={index}>
-                    <div className="info-promo">
-                      <div className="body-p">
-                        <h1 className="date-cup">PROMOCION :</h1>
-                        <h2 style={{ fontSize: '0.8em', textAlign: 'justify' }}>{promo.descripcion}</h2>
-                        <h2 className="cod-i">codigo: {promo.codigoCupon}</h2>
-                      </div>
-                      <div>
-                        <img src={Pet} alt="" />
-                      </div>
+              {listPromos?.map((promo, index) => (
+                <div className="item-promo" key={index}>
+                  <div className="info-promo">
+                    <div className="body-ip">
+                      <h1>PROMOCION:</h1>
+                      <h2 className="dsc-i">{promo.descripcion}</h2>
+                      <h2 className="cod-i">codigo: {promo.codigoCupon}</h2>
                     </div>
+                    <img src={Pet} alt="" />
                   </div>
-                ))}
-                <h2 style={{ float: 'right', fontSize: '0.9em', padding: '10px 0' }}>
-                  {moment(listPromos[0]?.dateCreacion?.fecha).format('D [de] MMMM[, del] YYYY')}
-                </h2>
-              </div>
+                  <div className="notice">
+                    <span>CANGEALO EN TU PROXIMA ORDEN</span>
+                  </div>
+                  <h2 className="vigencia">Vencimiento : {calcularFechaFutura(promo.vigencia)}</h2>
+                </div>
+              ))}
             </div>
           ) : null}
         </div>

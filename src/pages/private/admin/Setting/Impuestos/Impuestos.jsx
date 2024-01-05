@@ -12,6 +12,7 @@ import { PrivateRoutes } from '../../../../../models';
 
 import { updateImpuesto } from '../../../../../redux/actions/aModificadores';
 import { useDispatch, useSelector } from 'react-redux';
+import { nameImpuesto } from '../../../../../services/global';
 
 const Impuestos = () => {
   const dispatch = useDispatch();
@@ -55,8 +56,8 @@ const Impuestos = () => {
         <form className="form-impuesto" onSubmit={formik.handleSubmit}>
           <h1>Monto de Impuesto</h1>
           <NumberInput
-            name="IGV"
-            label="IGV :"
+            name={nameImpuesto}
+            label={`${nameImpuesto} :`}
             value={formik.values.IGV}
             precision={2}
             onChange={(e) => {

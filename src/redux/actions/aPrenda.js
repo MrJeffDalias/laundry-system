@@ -1,10 +1,12 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { Notify } from '../../utils/notify/Notify';
+import { socket } from '../../utils/socket/connect';
 
 export const updatePrenda = createAsyncThunk('prenda/updatePrenda', async (productos) => {
   try {
     const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/api/lava-ya/update-prendas`, productos);
+    socket.emit('client:cPricePrendas', response.data);
     return response.data;
   } catch (error) {
     // Puedes manejar los errores aquí

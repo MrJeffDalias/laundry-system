@@ -7,6 +7,7 @@ import { formatValue } from '../../../../../../../utils/functions';
 import { ReactComponent as Moto } from '../../../../../../../utils/img/Delivery/moto.svg';
 import { ReactComponent as Taxi } from '../../../../../../../utils/img/Delivery/taxi-lateral.svg';
 import { ReactComponent as Tienda } from '../../../../../../../utils/img/Delivery/tienda.svg';
+import { simboloMoneda } from '../../../../../../../services/global';
 
 const Entregar = ({ setFieldValue, errors, touched, values }) => {
   const inputRef = useRef(null);
@@ -102,7 +103,7 @@ const Entregar = ({ setFieldValue, errors, touched, values }) => {
           value={values.mDevolucion}
           ref={inputRef}
           disabled={values.tipoTrasporte === 'Tienda' ? true : false}
-          parser={(value) => value.replace(/S\/\s?|(,*)/g, '')}
+          parser={(value) => value.replace(new RegExp(`${simboloMoneda}\\s?|(,*)`, 'g'), '')}
           formatter={formatValue}
           placeholder="Ingrese Monto"
           precision={2}

@@ -7,7 +7,10 @@
         .tables-info-prendas {
             display: flex;
             gap: 25px;
-            align-items: flex-end;
+            max-width: 1000px;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            justify-content: center;
         }
     }
     .cash-counter {

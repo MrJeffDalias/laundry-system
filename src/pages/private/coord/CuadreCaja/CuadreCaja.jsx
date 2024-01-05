@@ -31,6 +31,7 @@ import { LS_CancelarDeliveryDevolucion } from '../../../../redux/states/delivery
 import LoaderSpiner from '../../../../components/LoaderSpinner/LoaderSpiner';
 import { socket } from '../../../../utils/socket/connect';
 import { Notify } from '../../../../utils/notify/Notify';
+import { MONTOS_BASE, ingresoDigital, simboloMoneda } from '../../../../services/global';
 
 const CuadreCaja = () => {
   const navigate = useNavigate();
@@ -57,10 +58,15 @@ const CuadreCaja = () => {
   });
 
   const [iClienteEfectivo, setIClienteEfectivo] = useState();
-  const [iClienteYape, setIClienteYape] = useState();
+  const [iClienteTransferencia, setIClienteTransferencia] = useState();
+  const [iClienteTarjeta, setIClienteTarjeta] = useState();
+
   const [iGastos, setIGastos] = useState([]);
+
   const [pedidosPagadosEfectivo, setPedidosPagadosEfectivo] = useState(0);
-  const [pedidosPagadosYape, setPedidosPagadosYape] = useState(0);
+  const [pedidosPagadosTransferencia, setPedidosPagadosTransferencia] = useState(0);
+  const [pedidosPagadosTarjeta, setPedidosPedidosPagadosTarjeta] = useState(0);
+
   const [gastos, setGastos] = useState('');
 
   const [pruebaState, setPruebaState] = useState();
@@ -246,12 +252,16 @@ const CuadreCaja = () => {
         //const facturados = clientesAprobados.filter((d) => d.factura === true);
 
         const cEfectivo = clientesAprobados.filter((d) => d.metodoPago === 'Efectivo');
-        const cYape = clientesAprobados.filter((d) => d.metodoPago === 'YAPE');
+        const cTransferencia = clientesAprobados.filter((d) => d.metodoPago === ingresoDigital);
+        const cTarjeta = clientesAprobados.filter((d) => d.metodoPago === 'Tarjeta');
 
         setPedidosPagadosEfectivo(sumaMontos(cEfectivo));
-        setPedidosPagadosYape(sumaMontos(cYape));
+        setPedidosPagadosTransferencia(sumaMontos(cTransferencia));
+        setPedidosPedidosPagadosTarjeta(sumaMontos(cTarjeta));
+
         setIClienteEfectivo(cEfectivo);
-        setIClienteYape(cYape);
+        setIClienteTransferencia(cTransferencia);
+        setIClienteTarjeta(cTarjeta);
       }
 
       if (infoDelivery) {
@@ -340,18 +350,7 @@ const CuadreCaja = () => {
           fecha: datePrincipal.fecha,
           hora: '',
         },
-        Montos: [
-          { monto: 100, cantidad: '', total: 0 },
-          { monto: 50, cantidad: '', total: 0 },
-          { monto: 20, cantidad: '', total: 0 },
-          { monto: 10, cantidad: '', total: 0 },
-          { monto: 5, cantidad: '', total: 0 },
-          { monto: 2, cantidad: '', total: 0 },
-          { monto: 1, cantidad: '', total: 0 },
-          { monto: 0.5, cantidad: '', total: 0 },
-          { monto: 0.2, cantidad: '', total: 0 },
-          { monto: 0.1, cantidad: '', total: 0 },
-        ],
+        Montos: MONTOS_BASE,
         cajaInicial: '0',
         cajaFinal: '0',
         corte: '0',
@@ -390,10 +389,10 @@ const CuadreCaja = () => {
     if (pruebaState) {
       setStateCuadre((calculateTotalNeto(pruebaState.Montos) - MontoPrevisto()).toFixed(2));
     }
-  }, [pruebaState, infoLastCuadre, gastos, pedidosPagadosEfectivo, pedidosPagadosYape]);
+  }, [pruebaState, infoLastCuadre, gastos, pedidosPagadosEfectivo, pedidosPagadosTransferencia, pedidosPagadosTarjeta]);
 
   useEffect(() => {
-    socket.on('cGasto', (data) => {
+    socket.on('server:cGasto', (data) => {
       dispatch(LS_updateGasto(data));
     });
 
@@ -411,7 +410,7 @@ const CuadreCaja = () => {
     return () => {
       // Remove the event listener when the component unmounts
       socket.off('server:cancel-delivery');
-      socket.off('cGasto');
+      socket.off('server:cGasto');
       socket.off('server:changeCuadre:child');
       socket.off('cAnular');
     };
@@ -467,7 +466,9 @@ const CuadreCaja = () => {
                         {pruebaState.Montos.map((mS, index) => (
                           <tr key={index}>
                             <td>
-                              <label htmlFor="">S/ {mS.monto}</label>
+                              <label htmlFor="">
+                                {simboloMoneda} {mS.monto}
+                              </label>
                             </td>
                             <td>
                               <NumberInput
@@ -504,7 +505,9 @@ const CuadreCaja = () => {
                               />
                             </td>
                             <td>
-                              <label htmlFor="">S/ {parseFloat(mS.total.toFixed(1))}</label>
+                              <label htmlFor="">
+                                {simboloMoneda} {parseFloat(mS.total.toFixed(1))}
+                              </label>
                             </td>
                           </tr>
                         ))}
@@ -557,7 +560,9 @@ const CuadreCaja = () => {
                       <div className="bloques-states">
                         <div className="states">
                           <div className="bloque title sb">SOBRA</div>
-                          <div className="bloque res">{Number(stateCuadre) > 0 ? `S/ ${stateCuadre}` : 'NO'}</div>
+                          <div className="bloque res">
+                            {Number(stateCuadre) > 0 ? `${simboloMoneda} ${stateCuadre}` : 'NO'}
+                          </div>
                         </div>
                         <div className="states ">
                           <div className="bloque title cd">CUADRA</div>
@@ -565,10 +570,23 @@ const CuadreCaja = () => {
                         </div>
                         <div className="states ">
                           <div className="bloque title fl">FALTA</div>
-                          <div className="bloque res">{Number(stateCuadre) < 0 ? `S/ ${stateCuadre}` : 'NO'}</div>
+                          <div className="bloque res">
+                            {Number(stateCuadre) < 0 ? `${simboloMoneda} ${stateCuadre}` : 'NO'}
+                          </div>
                         </div>
                       </div>
-                      <TextInput label="Pedidos Pagados (YAPE) :" radius="md" value={pedidosPagadosYape} readOnly />
+                      <TextInput
+                        label={`Pedidos Pagados (${ingresoDigital}) :`}
+                        radius="md"
+                        value={pedidosPagadosTransferencia}
+                        readOnly
+                      />
+                      <TextInput
+                        label={`Pedidos Pagados (TARJETA) :`}
+                        radius="md"
+                        value={pedidosPagadosTarjeta}
+                        readOnly
+                      />
                     </div>
                   </div>
                   <div className="finish-balance">
@@ -734,10 +752,10 @@ const CuadreCaja = () => {
                         </div>
                       ) : null}
                     </div>
-                    <div className="yape tb-info">
-                      <span>YAPE</span>
-                      {iClienteYape ? (
-                        <div className="paid-orders-yape">
+                    <div className="transferencia tb-info">
+                      <span>{ingresoDigital}</span>
+                      {iClienteTransferencia ? (
+                        <div className="paid-orders-tranf">
                           <table>
                             <thead>
                               <tr>
@@ -748,7 +766,7 @@ const CuadreCaja = () => {
                               </tr>
                             </thead>
                             <tbody>
-                              {iClienteYape.map((cliente, index) => (
+                              {iClienteTransferencia.map((cliente, index) => (
                                 <tr
                                   key={index}
                                   // style={{ background: cliente.estadoPrenda === 'anulado' ? '#ff686847' : '#fff' }}
@@ -765,6 +783,39 @@ const CuadreCaja = () => {
                         </div>
                       ) : null}
                     </div>
+                    {/* -------- */}
+                    <div className="tarjeta tb-info">
+                      <span>TARJETA</span>
+                      {iClienteTarjeta ? (
+                        <div className="paid-orders-tarj">
+                          <table>
+                            <thead>
+                              <tr>
+                                <th>Codigo</th>
+                                <th>Modalidad</th>
+                                <th>Nombre</th>
+                                <th>Monto</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {iClienteTarjeta.map((cliente, index) => (
+                                <tr
+                                  key={index}
+                                  // style={{ background: cliente.estadoPrenda === 'anulado' ? '#ff686847' : '#fff' }}
+                                  className={`${cliente.estadoPrenda === 'anulado' ? 'mode-anulado' : null}`}
+                                >
+                                  <td>{cliente.codRecibo}</td>
+                                  <td>{cliente.Modalidad}</td>
+                                  <td>{cliente.Nombre}</td>
+                                  <td>{cliente.totalNeto}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : null}
+                    </div>
+                    {/* ------- */}
                   </div>
                 </div>
               </BodyCC>
@@ -977,15 +1028,16 @@ const BodyCC = styled.div`
           }
 
           .states {
-            width: 250px;
+            width: max-content;
             text-align: center;
             color: #6c757d;
             font-weight: bold;
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 125px max-content;
 
             .bloque {
-              padding: 10px;
+              padding: 10px 20px;
+              line-height: 2;
             }
 
             .title {
@@ -998,6 +1050,7 @@ const BodyCC = styled.div`
               border: solid 1px silver;
               border-radius: 1px 15px 15px 1px;
               border-left: solid 0.5px silver;
+              min-width: 125px;
             }
           }
         }
@@ -1158,8 +1211,39 @@ const BodyCC = styled.div`
         padding-bottom: 7px;
       }
     }
+    .paid-orders-tarj {
+      table {
+        tr {
+          grid-template-columns: 80px 140px 280px 150px;
+        }
+        thead {
+          tr {
+            th {
+              background: #007bff;
+              color: #fff;
+            }
+          }
+        }
+        tbody {
+          tr {
+            td {
+              border: 1px solid #007bff;
+              &:last-child {
+                border-right: 2px solid #007bff !important;
+              }
+              &:first-child {
+                border-left: 2px solid #007bff !important;
+              }
+            }
+            &:last-child {
+              border-bottom: 2px solid #007bff !important;
+            }
+          }
+        }
+      }
+    }
 
-    .paid-orders-yape {
+    .paid-orders-tranf {
       table {
         tr {
           grid-template-columns: 80px 140px 280px 150px;

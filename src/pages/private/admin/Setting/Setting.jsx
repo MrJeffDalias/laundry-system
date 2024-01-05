@@ -12,6 +12,7 @@ import metasSetting from './metas.png';
 
 import { Link } from 'react-router-dom';
 import { PrivateRoutes } from '../../../../models';
+import { nameImpuesto, nameMoneda } from '../../../../services/global';
 
 const Setting = () => {
   return (
@@ -50,7 +51,7 @@ const Setting = () => {
           </div>
           <div>
             <h1>Ajuste de Puntos</h1>
-            <p>Actualiza el valor de puntos, "Donde "x" cantidad de puntos valdra "y" cantidad de soles"</p>
+            <p>Actualiza el valor de puntos, "Donde "x" cantidad de {nameMoneda} valdra "y" cantidad de puntos"</p>
           </div>
         </Link>
         <Link to={`/${PrivateRoutes.PRIVATE}/${PrivateRoutes.SETTING_TAXES}`} className="tag-setting">
@@ -59,7 +60,7 @@ const Setting = () => {
           </div>
           <div>
             <h1>Ajuste de Impuesto</h1>
-            <p>Actualiza el valor del IGV, en porcentaje</p>
+            <p>Actualiza el valor del {nameImpuesto}, en porcentaje</p>
           </div>
         </Link>
         <Link to={`/${PrivateRoutes.PRIVATE}/${PrivateRoutes.SETTING_GOALS}`} className="tag-setting">

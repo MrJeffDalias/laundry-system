@@ -28,6 +28,7 @@ import EndProcess from '../Actions/EndProcess/EndProcess';
 import Details from '../Details/Details';
 import BarProgress from '../../../../../components/PRIVATE/BarProgress/BarProgress';
 import { Roles } from '../../../../../models';
+import { confMoneda, simboloMoneda, tipoMoneda } from '../../../../../services/global';
 
 const List = () => {
   //Filtros de Fecha
@@ -122,34 +123,15 @@ const List = () => {
         ),
         size: 190,
       },
-      // {
-      //   accessorKey: 'cantidad',
-      //   header: 'Cantidad',
-      //   mantineFilterTextInputProps: {
-      //     placeholder: 'cantidad',
-      //   },
-      //   //enableSorting: false,
-      //   //enableEditing: false,
-      //   Cell: ({ cell }) => (
-      //     <MultiSelect
-      //       data={cell.getValue()}
-      //       value={cell.getValue()}
-      //       disabled={true}
-      //       clearable={true}
-      //       searchable={false}
-      //     />
-      //   ),
-      //   size: 80,
-      // },
       {
         accessorKey: 'totalNeto',
         header: 'Monto',
         //enableSorting: false,
         Cell: ({ cell }) => (
           <Box>
-            {cell.getValue()?.toLocaleString?.('es-PE', {
+            {cell.getValue()?.toLocaleString?.(confMoneda, {
               style: 'currency',
-              currency: 'PEN',
+              currency: tipoMoneda,
               minimumFractionDigits: 0,
               maximumFractionDigits: 0,
             })}
@@ -300,7 +282,7 @@ const List = () => {
           Nombre: d.Nombre,
           Modalidad: d.Modalidad,
           Producto: handleProductoCantidad(d.Producto),
-          totalNeto: `S/${d.totalNeto}`,
+          totalNeto: `${simboloMoneda} ${d.totalNeto}`,
           MetodoPago: d.metodoPago,
           DNI: d.dni,
           Celular: d.celular,

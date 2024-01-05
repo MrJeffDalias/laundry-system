@@ -73,8 +73,13 @@
             padding: 10px;
             border-radius: 10px;
             .space-paralelos {
-                display: grid;
-                grid-template-columns: 300px 300px;
+                display: flex;
+                width: 100%;
+                justify-content: space-between;
+                .paralelo {
+                    width: 300px;
+                    margin: 10px 20px;
+                }
                 .space-info {
                     position: relative;
                 }
@@ -199,13 +204,14 @@
             }
 
             .description-info {
-                width: 539px;
+                width: max-content;
                 margin: 15px auto;
                 .actions {
                     display: flex;
                     justify-content: space-between;
                     .mantine-Select-root {
                         position: relative;
+                        padding-bottom: 20px;
                     }
                     .button-actions {
                         display: grid;
@@ -229,7 +235,7 @@
                     tr {
                         position: relative;
                         display: grid;
-                        grid-template-columns: 80px 130px 210px 80px 40px;
+                        grid-template-columns: 100px 150px 250px 100px 40px;
                     }
                     thead {
                         border: solid 1px #5b81ea;
@@ -240,7 +246,7 @@
                                 font-weight: bold;
                                 padding: 10px;
                                 text-align: center;
-                                font-size: 14px;
+                                font-size: 1.2em;
                             }
                         }
                     }
@@ -266,10 +272,10 @@
                                     width: 50px;
                                 }
                                 .txtProducto {
-                                    width: 100px;
+                                    width: 100%;
                                 }
                                 .txtTotal {
-                                    width: 50px;
+                                    width: 100%;
                                 }
                             }
                             .tADescription {
@@ -283,14 +289,14 @@
                                             position: absolute;
                                             left: 0;
                                             right: 28px;
-                                            top: 9px;
-                                            width: 140px;
+                                            top: 10px;
+                                            width: 75%;
                                             height: 154px;
                                             background: #fff;
                                             z-index: 1;
                                         }
                                         textarea {
-                                            width: 83%;
+                                            width: 85%;
                                             height: 35px;
                                             float: left;
                                             padding: 6px 15px 5px 10px;
@@ -519,12 +525,17 @@
                         margin: auto 10px;
                         position: absolute;
                         right: -72px;
+                        outline: none;
+                        user-select: none;
                     }
                     .ico-efect {
                         bottom: -14px;
                     }
-                    .ico-yape {
+                    .ico-tranf {
                         bottom: 0;
+                    }
+                    .ico-card {
+                        top: 10px;
                     }
                 }
             }

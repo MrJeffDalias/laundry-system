@@ -133,12 +133,12 @@ const Usuarios = () => {
 
   useEffect(() => {
     // Nuevo Usuario Agregado
-    socket.on('onNewUser', (data) => {
+    socket.on('server:onNewUser', (data) => {
       dispatch(LS_AddUser(data));
     });
 
     // Usuario Eliminado
-    socket.on('onDeleteUser', (data) => {
+    socket.on('server:onDeleteUser', (data) => {
       dispatch(LS_DeleteUser(data));
       if (InfoUsuario._id === data) {
         alert('Comunicado del Administrador : Su cuenta Fue Eliminada');
@@ -147,15 +147,15 @@ const Usuarios = () => {
     });
 
     // Usuario Actualizado
-    socket.on('onUpdateUser', (data) => {
+    socket.on('server:onUpdateUser', (data) => {
       dispatch(LS_UpdateUser(data));
     });
 
     return () => {
       // Remove the event listener when the component unmounts
-      socket.off('onNewUser');
-      socket.off('onDeleteUser');
-      socket.off('onUpdateUser');
+      socket.off('server:onNewUser');
+      socket.off('server:onDeleteUser');
+      socket.off('server:onUpdateUser');
     };
   }, []);
 

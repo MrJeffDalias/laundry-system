@@ -24,6 +24,7 @@ import { AddOrdenServices } from '../../../../../../redux/actions/aOrdenServices
 
 import { setLastRegister } from '../../../../../../redux/states/service_order';
 import { PrivateRoutes } from '../../../../../../models';
+import { simboloMoneda } from '../../../../../../services/global';
 
 const Delivery = () => {
   const dispatch = useDispatch();
@@ -325,19 +326,11 @@ const Delivery = () => {
                         <NumberInput
                           name="price"
                           value={values.price}
-                          parser={(value) => value.replace(/S\/\s?|(,*)/g, '')}
-                          // formatter={(value) => {
-                          // 	!Number.isNaN(parseFloat(value))
-                          // 		? `S/ ${value}`.replace(
-                          // 				/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g,
-                          // 				",",
-                          // 		  )
-                          // 		: "";
-                          // }}
+                          parser={(value) => value.replace(new RegExp(`${simboloMoneda}\\s?|(,*)`, 'g'), '')}
                           formatter={(value) => {
                             return Number.isNaN(parseFloat(value))
                               ? ''
-                              : `S/ ${value}`.replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ',');
+                              : `${simboloMoneda} ${value}`.replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ',');
                           }}
                           placeholder="Ingrese Monto"
                           precision={2}

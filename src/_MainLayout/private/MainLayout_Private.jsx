@@ -242,23 +242,23 @@ const PrivateMasterLayout = (props) => {
       dispatch(LS_nextCodigo(data));
     });
     // PRENDAS
-    socket.on('cPricePrendas', (data) => {
+    socket.on('server:cPricePrendas', (data) => {
       dispatch(LS_updatePrendas(data));
     });
     // PUNTOS
-    socket.on('cPuntos', (data) => {
+    socket.on('server:cPuntos', (data) => {
       dispatch(LS_updatePuntos(data));
     });
     // IMPUESTOS
-    socket.on('cImpuesto', (data) => {
+    socket.on('server:cImpuesto', (data) => {
       dispatch(LS_updateImpuestos(data));
     });
     // PROMOCIONES
-    socket.on('cPromotions', (data) => {
+    socket.on('server:cPromotions', (data) => {
       dispatch(LS_updatePromociones(data));
     });
     // NEGOCIO
-    socket.on('cNegocio', (data) => {
+    socket.on('server:cNegocio', (data) => {
       const { dias, horas, estado } = data.horario;
       if (estado === false) {
         _handleShowModal('Emergencia', 'Cierre total del sistema', 'close-emergency');
@@ -285,17 +285,17 @@ const PrivateMasterLayout = (props) => {
       }
     });
     // LOGIN
-    socket.on('onLogin', (data) => {
+    socket.on('server:onLogin', (data) => {
       if (InfoUsuario._id === data) {
         _handleShowModal('Comunicado', 'Se registro otro inicio de sesion con esta cuenta', 'double-login');
       }
     });
     // 1er LOGIN
-    socket.on('onFirtLogin', (data) => {
+    socket.on('server:onFirtLogin', (data) => {
       dispatch(LS_FirtsLogin(data));
     });
     // Cambio en los datos de usuario
-    socket.on('onChangeUser', (data) => {
+    socket.on('server:onChangeUser', (data) => {
       if (InfoUsuario._id === data) {
         _handleShowModal(
           'Administracion',
@@ -304,8 +304,8 @@ const PrivateMasterLayout = (props) => {
         );
       }
     });
-    // Cambio en los datos de usuario
-    socket.on('onDeleteAccount', (data) => {
+    // Elimancion de Usuario
+    socket.on('server:onDeleteAccount', (data) => {
       if (InfoUsuario._id === data) {
         _handleShowModal('Administracion', 'Su cuenta ha sido ELIMINADA', 'delete');
       }
@@ -320,14 +320,15 @@ const PrivateMasterLayout = (props) => {
       socket.off('server:newDelivery');
       socket.off('server:updateDelivery');
 
-      socket.off('cPricePrendas');
-      socket.off('cPuntos');
-      socket.off('cImpuesto');
-      socket.off('cPromotions');
-      socket.off('cNegocio');
-      socket.off('onLogin');
-      socket.off('onDeleteAccount');
-      socket.off('onChangeUser');
+      socket.off('server:cPricePrendas');
+      socket.off('server:cPuntos');
+      socket.off('server:cImpuesto');
+      socket.off('server:cPromotions');
+      socket.off('server:cNegocio');
+      socket.off('server:onLogin');
+      socket.off('server:onFirtLogin');
+      socket.off('server:onDeleteAccount');
+      socket.off('server:onChangeUser');
     };
   }, []);
 
@@ -355,25 +356,7 @@ const PrivateMasterLayout = (props) => {
                 Agregar Gasto
               </button>
             ) : null}
-            <button
-              id="btn-gasto"
-              className="add-gasto"
-              onClick={() => {
-                setMInformeDiario(true);
-              }}
-            >
-              Informe Diario
-            </button>
           </div>
-          {mInformeDiario ? (
-            <Portal
-              onClose={() => {
-                setMInformeDiario(false);
-              }}
-            >
-              <ReporteDiario onClose={setMInformeDiario} />
-            </Portal>
-          ) : null}
           {mGasto ? (
             <Portal
               onClose={() => {

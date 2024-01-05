@@ -44,3 +44,9 @@ export function GetFirstFilter() {
 
   return { formatoD: formattedDates, formatoS: formattedMonths };
 }
+
+export const calcularFechaFutura = (numeroDeDias) => {
+  const fechaActual = moment();
+  const nuevaFecha = fechaActual.clone().add(numeroDeDias, 'days');
+  return nuevaFecha.format('D [de] MMMM[, del] YYYY');
+};

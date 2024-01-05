@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import './points.scss';
 import { useFormik } from 'formik';
 
@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { PrivateRoutes } from '../../../../../models';
 import { updatePuntos } from '../../../../../redux/actions/aModificadores';
 import { useDispatch, useSelector } from 'react-redux';
+import { nameMoneda } from '../../../../../services/global';
 
 const Points = () => {
   const dispatch = useDispatch();
@@ -57,6 +58,20 @@ const Points = () => {
         <form className="form-point" onSubmit={formik.handleSubmit}>
           <h1>Valor de Puntos</h1>
           <NumberInput
+            name="valor"
+            label={`Valor en ${nameMoneda} :`}
+            value={formik.values.valor}
+            precision={0}
+            onChange={(e) => {
+              formik.setFieldValue('valor', !Number.isNaN(e) ? e : 0);
+            }}
+            min={1}
+            step={1}
+            max={1000}
+            hideControls
+            autoComplete="off"
+          />
+          <NumberInput
             name="score"
             label="Puntos :"
             value={formik.values.score}
@@ -70,20 +85,7 @@ const Points = () => {
             hideControls
             autoComplete="off"
           />
-          <NumberInput
-            name="valor"
-            label="Valor en soles :"
-            value={formik.values.valor}
-            precision={0}
-            onChange={(e) => {
-              formik.setFieldValue('valor', !Number.isNaN(e) ? e : 0);
-            }}
-            min={1}
-            step={1}
-            max={1000}
-            hideControls
-            autoComplete="off"
-          />
+
           <Button type="submit" variant="gradient" gradient={{ from: 'indigo', to: 'cyan' }}>
             Actualizar Valor
           </Button>

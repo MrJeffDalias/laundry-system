@@ -20,8 +20,9 @@ import './ordernServicio.scss';
 import { ReactComponent as Eliminar } from '../../../utils/img/OrdenServicio/eliminar.svg';
 import { ReactComponent as Lavadora } from '../../../utils/img/OrdenServicio/lavadora.svg';
 
-import Yape from '../../../utils/img/OrdenServicio/Yape.png';
+import Tranferencia from '../../../utils/img/OrdenServicio/Transferencia.png';
 import Efectivo from '../../../utils/img/OrdenServicio/dinero.png';
+import Tarjeta from '../../../utils/img/OrdenServicio/card.png';
 import Coins from '../../../utils/img/Puntos/coins.png';
 
 import Tag from '../../Tag/Tag';
@@ -42,6 +43,7 @@ import Promocion from './Promocion/Promocion';
 import { setLastRegister } from '../../../redux/states/service_order';
 import { socket } from '../../../utils/socket/connect';
 import { Notify } from '../../../utils/notify/Notify';
+import { documento, ingresoDigital, nameImpuesto, simboloMoneda } from '../../../services/global';
 
 const OrdenServicio = ({ mode, action, onAction, iEdit, onReturn, iDelivery }) => {
   const iCodigo = useSelector((state) => state.codigo.infoCodigo.codActual);
@@ -86,7 +88,7 @@ const OrdenServicio = ({ mode, action, onAction, iEdit, onReturn, iDelivery }) =
       ),
   });
 
-  const getProductValue = (nombre) => {
+  const getPricePrenda = (nombre) => {
     const garment = infoPrendas.find((prenda) => prenda.name.toLowerCase() === nombre.toLowerCase());
     if (garment) {
       return garment.price;
@@ -117,14 +119,14 @@ const OrdenServicio = ({ mode, action, onAction, iEdit, onReturn, iDelivery }) =
         ? [
             {
               cantidad: 1,
-              descripcion: 'Recojo y Envio',
+              descripcion: 'Recojo y Entrega',
               expanded: false,
               price: 0,
               producto: 'Delivery',
               stado: true,
-              total: getProductValue('Delivery'),
+              total: getPricePrenda('Delivery'),
               type: 'Delivery',
-              categoria: 'Delivery',
+              // categoria: 'Delivery',
             },
           ]
         : [],
@@ -187,17 +189,18 @@ const OrdenServicio = ({ mode, action, onAction, iEdit, onReturn, iDelivery }) =
     });
   };
 
-  const addRowGarment = (tipo, producto, precio, stateCantidad, categoria) => {
+  const addRowGarment = (producto, precio, stateCantidad /*, categoria*/) => {
+    const tipo = producto === 'Otros' ? 'Otros' : 'Prenda';
     const newRow = {
       stado: stateCantidad,
       price: precio,
       type: tipo,
-      cantidad: stateCantidad === false ? 1 : 1,
-      producto: producto,
+      cantidad: 1,
+      producto: producto === 'Otros' ? '' : producto,
       descripcion: '',
       expanded: false,
       total: precio,
-      categoria: categoria,
+      //categoria: categoria,
     };
     return newRow;
   };
@@ -219,7 +222,6 @@ const OrdenServicio = ({ mode, action, onAction, iEdit, onReturn, iDelivery }) =
       descripcion: p.descripcion,
       precio: p.price,
       total: p.total,
-      categoria: p.categoria,
     }));
 
     let finalUpdatePromo = info.cargosExtras;
@@ -289,7 +291,8 @@ const OrdenServicio = ({ mode, action, onAction, iEdit, onReturn, iDelivery }) =
 
   const handleTextareaHeight = (textarea) => {
     const scrollHeight = textarea.scrollHeight;
-    textarea.style.height = `${scrollHeight - 13}px`;
+    textarea.style.height = `${scrollHeight}px`;
+    textarea.style.padding = `10px`;
   };
 
   const handleGetClientes = async (dni) => {
@@ -376,33 +379,39 @@ const OrdenServicio = ({ mode, action, onAction, iEdit, onReturn, iDelivery }) =
     return ListCorrecciones;
   };
 
+  const sumaTotalesProductos = (listProductos) => {
+    return listProductos.reduce((total, prenda) => {
+      const prendaTotal = parseFloat(prenda.total);
+      return isNaN(prendaTotal) ? total : total + prendaTotal;
+    }, 0);
+  };
+
   const recalculatePromoDescuento = () => {
     let updateCupon = listCupones;
-    const cupTypeDsc = listCupones.filter((cupon) => cupon.tipo === 'Descuento');
+
+    const cupTypeDsc = listCupones.filter((cupon) => cupon.tipoDescuento === 'Porcentaje');
 
     // Agrupacion de cupones segun codigo
     const groupCupon = [...new Set(cupTypeDsc.map((item) => item.codigoPromocion))].map((codigoPromocion) =>
       cupTypeDsc.filter((item) => item.codigoPromocion === codigoPromocion)
     );
-
     // Iterar a través de grupos de cupones
     if (groupCupon.length > 0) {
       for (const grupo of groupCupon) {
-        const prenda = grupo[0].prenda;
+        for (const dsc of grupo) {
+          let prendasConsideradas;
+          if (dsc.tipoPromocion === 'Varios') {
+            if (dsc.prenda.includes('Todos')) {
+              prendasConsideradas = formik.values.productos;
+            } else {
+              prendasConsideradas = formik.values.productos.filter((elemento) =>
+                dsc.prenda.includes(elemento.producto)
+              );
+            }
 
-        const predasSimilares = formik.values.productos.filter((p) => p.producto === prenda);
+            let sumaTotales = sumaTotalesProductos(prendasConsideradas);
 
-        if (predasSimilares.length > 0) {
-          let sumaTotales = predasSimilares.reduce((total, prenda) => {
-            const prendaTotal = parseFloat(prenda.total);
-            return isNaN(prendaTotal) ? total : total + prendaTotal;
-          }, 0);
-
-          // Calcular descuentos y actualizar sumaTotales
-
-          for (const dsc of grupo) {
             const dscFinal = +parseFloat(sumaTotales * (dsc.nMultiplicador / 100)).toFixed(1);
-            // Actualizar el descuento en cada registro según su código de cupón
             updateCupon = updateCupon.map((c) => {
               if (c.codigoCupon === dsc.codigoCupon) {
                 return { ...c, descuento: dscFinal };
@@ -410,21 +419,38 @@ const OrdenServicio = ({ mode, action, onAction, iEdit, onReturn, iDelivery }) =
               return c;
             });
             sumaTotales -= dscFinal;
+          } else {
+            const prenda = grupo[0].prenda;
+            prendasConsideradas = formik.values.productos.filter((p) => p.producto === prenda);
+            if (prendasConsideradas.length > 0) {
+              let sumaTotales = sumaTotalesProductos(prendasConsideradas);
+
+              // Calcular descuentos y actualizar sumaTotales
+
+              const dscFinal = +parseFloat(sumaTotales * (dsc.nMultiplicador / 100)).toFixed(1);
+              // Actualizar el descuento en cada registro según su código de cupón
+              updateCupon = updateCupon.map((c) => {
+                if (c.codigoCupon === dsc.codigoCupon) {
+                  return { ...c, descuento: dscFinal };
+                }
+                return c;
+              });
+              sumaTotales -= dscFinal;
+            } else {
+              updateCupon = updateCupon.map((c) => {
+                if (c.codigoCupon === dsc.codigoCupon) {
+                  return { ...c, descuento: 0 };
+                }
+                return c;
+              });
+            }
           }
-        } else {
-          for (const dsc of grupo) {
-            updateCupon = updateCupon.map((c) => {
-              if (c.codigoCupon === dsc.codigoCupon) {
-                return { ...c, descuento: 0 };
-              }
-              return c;
-            });
-          }
+          formik.setFieldValue('cargosExtras.beneficios.promociones', updateCupon);
+          setListCupones(updateCupon);
         }
-        formik.setFieldValue('cargosExtras.beneficios.promociones', updateCupon);
-        setListCupones(updateCupon);
       }
     }
+
     const LCupones = updateCupon.length > 0 ? updateCupon : listCupones;
 
     const sumaTotales = LCupones.reduce((total, cupon) => {
@@ -616,8 +642,8 @@ const OrdenServicio = ({ mode, action, onAction, iEdit, onReturn, iDelivery }) =
                 }}
                 tabIndex={'1'}
                 autoFocus
-                label="Documento :"
-                placeholder="Ingrese N° Documento"
+                label={`${documento} :`}
+                placeholder={`Ingrese ${documento}`}
                 defaultValue={formik.values.dni}
                 onItemSubmit={(selected) => {
                   const cliente = infoClientes.find((obj) => obj.dni === selected.value);
@@ -798,37 +824,37 @@ const OrdenServicio = ({ mode, action, onAction, iEdit, onReturn, iDelivery }) =
             <div className="actions">
               <div className="button-actions">
                 <BotonModel
-                  name="Agregar Edredon"
-                  tabI="6"
-                  disabled={iEdit ? (iEdit.modeEditAll ? false : true) : false}
-                  listenClick={() =>
-                    formik.setFieldValue('productos', [
-                      ...formik.values.productos,
-                      addRowGarment('productos', 'Edredon', getProductValue('Edredon'), true, 'Edredon'),
-                    ])
-                  }
-                />
-                <BotonModel
-                  name="Ropa x Kilo"
+                  name="Agregar Toalla"
                   tabI="7"
                   disabled={iEdit ? (iEdit.modeEditAll ? false : true) : false}
                   listenClick={() =>
                     formik.setFieldValue('productos', [
                       ...formik.values.productos,
-                      addRowGarment('productos', 'Ropa x Kilo', getProductValue('Ropa x Kilo'), true, 'Ropa x Kilo'),
+                      addRowGarment('Toalla', getPricePrenda('Toalla'), false),
+                    ])
+                  }
+                />
+                <BotonModel
+                  name="Ropa x Kilo"
+                  tabI="8"
+                  disabled={iEdit ? (iEdit.modeEditAll ? false : true) : false}
+                  listenClick={() =>
+                    formik.setFieldValue('productos', [
+                      ...formik.values.productos,
+                      addRowGarment('Ropa x Kilo', getPricePrenda('Ropa x Kilo'), false),
                     ])
                   }
                 />
               </div>
               <InputSelectedPrendas
-                listenClick={(type, producto, precio, estado, categoria) =>
+                listenClick={(producto, precio, estado /*, categoria*/) =>
                   formik.setFieldValue('productos', [
                     ...formik.values.productos,
-                    addRowGarment(type, producto, precio, estado, categoria),
+                    addRowGarment(producto, precio, estado /*, categoria*/),
                   ])
                 }
                 disabled={iEdit ? (iEdit.modeEditAll ? false : true) : false}
-                tabI={'8'}
+                tabI={'9'}
               />
             </div>
             <table className="tb-prod">
@@ -938,18 +964,37 @@ const OrdenServicio = ({ mode, action, onAction, iEdit, onReturn, iDelivery }) =
                             name={`productos.${index}.descripcion`}
                             onChange={(e) => {
                               const inputValue = e.target.value;
-                              handleTextareaHeight(e.target);
-                              formik.setFieldValue(`productos.${index}.descripcion`, inputValue);
+
+                              // Verifica si el valor actual contiene el check "✔"
+                              const hasCheck = inputValue.includes('✔ ');
+
+                              // Si no hay un check y hay un texto, agrega el check automáticamente
+                              const updatedValue = hasCheck ? inputValue : inputValue ? '✔ ' + inputValue : '';
+
+                              formik.setFieldValue(`productos.${index}.descripcion`, updatedValue);
                               formik.setFieldValue(`productos.${index}.expanded`, true);
+
+                              handleTextareaHeight(e.target);
+                            }}
+                            onKeyDown={(event) => {
+                              if (event.key === 'Enter') {
+                                event.preventDefault();
+
+                                // Añade el check de "✔" al texto existente
+                                const updatedValue = `${formik.values.productos[index].descripcion}\n✔ `;
+                                formik.setFieldValue(`productos.${index}.descripcion`, updatedValue);
+
+                                formik.setFieldValue(`productos.${index}.expanded`, true);
+                                const scrollHeight = event.target.scrollHeight;
+                                event.target.style.height = `${scrollHeight + 30}px`;
+                              }
                             }}
                             disabled={row.type === 'Delivery' ? true : false}
                             value={formik.values.productos[index].descripcion}
                             autoFocus={
                               row.producto === 'Ropa x Kilo'
                                 ? false
-                                : row.type === 'otros'
-                                ? false
-                                : row.type === 'productos' && row.stado === false
+                                : row.type === 'Prenda' && row.stado === false
                                 ? false
                                 : true
                             }
@@ -982,17 +1027,12 @@ const OrdenServicio = ({ mode, action, onAction, iEdit, onReturn, iDelivery }) =
                         className="txtTotal"
                         name={`productos.${index}.total`}
                         autoComplete="off"
+                        onDragStart={(e) => e.preventDefault()}
                         onChange={(e) => {
                           const inputValue = e.target.value;
                           const validInput = inputValue ? inputValue.replace(/[^0-9.]/g, '') : '';
 
                           formik.setFieldValue(`productos.${index}.total`, validInput);
-                        }}
-                        onBlur={(e) => {
-                          const inputValue = e.target.value;
-                          // if (inputValue === '0') {
-                          //   formik.setFieldValue(`productos.${index}.total`, '');
-                          // }
                         }}
                         disabled={iEdit?.estado === 'registrado' ? true : false}
                         value={formik.values.productos[index].total}
@@ -1026,7 +1066,9 @@ const OrdenServicio = ({ mode, action, onAction, iEdit, onReturn, iDelivery }) =
                       : null}
                   </td>
                   <td>Subtotal :</td>
-                  <td>S/ {formik.values.subTotal}</td>
+                  <td>
+                    {simboloMoneda} {formik.values.subTotal}
+                  </td>
                   <td></td>
                 </tr>
                 <tr>
@@ -1054,8 +1096,12 @@ const OrdenServicio = ({ mode, action, onAction, iEdit, onReturn, iDelivery }) =
                   </td>
                   {formik.values.factura ? (
                     <>
-                      <td>IGV ({formik.values.cargosExtras.igv.valor * 100} %) :</td>
-                      <td>S/ {formik.values.cargosExtras.igv.importe}</td>
+                      <td>
+                        {nameImpuesto} ({formik.values.cargosExtras.igv.valor * 100} %) :
+                      </td>
+                      <td>
+                        {simboloMoneda} {formik.values.cargosExtras.igv.importe}
+                      </td>
                     </>
                   ) : (
                     <>
@@ -1069,13 +1115,17 @@ const OrdenServicio = ({ mode, action, onAction, iEdit, onReturn, iDelivery }) =
                 <tr>
                   <td></td>
                   <td>Descuento :</td>
-                  <td>S/ {formik.values.descuento}</td>
+                  <td>
+                    {simboloMoneda} {formik.values.descuento}
+                  </td>
                   <td></td>
                 </tr>
                 <tr>
                   <td></td>
                   <td>Total :</td>
-                  <td>S/ {formik.values.totalNeto}</td>
+                  <td>
+                    {simboloMoneda} {formik.values.totalNeto}
+                  </td>
                   <td></td>
                 </tr>
               </tfoot>
@@ -1145,8 +1195,21 @@ const OrdenServicio = ({ mode, action, onAction, iEdit, onReturn, iDelivery }) =
               </div>
               {formik.values.metodoPago !== '' ? (
                 <img
-                  className={formik.values.metodoPago === 'Efectivo' ? 'ico-efect' : 'ico-yape'}
-                  src={formik.values.metodoPago === 'Efectivo' ? Efectivo : Yape}
+                  tabIndex="-1"
+                  className={
+                    formik.values.metodoPago === 'Efectivo'
+                      ? 'ico-efect'
+                      : formik.values.metodoPago === ingresoDigital
+                      ? 'ico-tranf'
+                      : 'ico-card'
+                  }
+                  src={
+                    formik.values.metodoPago === 'Efectivo'
+                      ? Efectivo
+                      : formik.values.metodoPago === ingresoDigital
+                      ? Tranferencia
+                      : Tarjeta
+                  }
                   alt=""
                 />
               ) : null}
@@ -1275,7 +1338,9 @@ const OrdenServicio = ({ mode, action, onAction, iEdit, onReturn, iDelivery }) =
                             <td></td>
                             <td></td>
                             <td>Total :</td>
-                            <td>S/ {listCupones.reduce((total, cupon) => total + cupon.descuento, 0)}</td>
+                            <td>
+                              {simboloMoneda} {listCupones.reduce((total, cupon) => total + cupon.descuento, 0)}
+                            </td>
                           </tr>
                         </tfoot>
                       </table>
@@ -1343,15 +1408,27 @@ const OrdenServicio = ({ mode, action, onAction, iEdit, onReturn, iDelivery }) =
                       type="button"
                       className="btn-add"
                       onClick={() => {
-                        const prendaEncontrada = infoPrendas.find((p) => p.name === resValidCupon.promocion.prenda);
                         // Buscar si ya existe un registro en la lista
                         const exists = listCupones.some((c) => c.codigoCupon === cupon);
                         if (!exists) {
                           let dscFinal = 0;
-                          if (resValidCupon.promocion.tipo === 'Descuento') {
-                            dscFinal = 0;
+                          if (resValidCupon.promocion.tipoPromocion === 'Varios') {
+                            if (resValidCupon.promocion.tipoDescuento === 'Porcentaje') {
+                              dscFinal = 0;
+                            } else {
+                              dscFinal = resValidCupon.promocion.descuento;
+                            }
                           } else {
-                            dscFinal = prendaEncontrada.price * resValidCupon.promocion.descuento;
+                            // tipoPromocion es Unico
+                            if (
+                              resValidCupon.promocion.tipoDescuento === 'Gratis' &&
+                              resValidCupon.promocion.tipoPromocion === 'Unico'
+                            ) {
+                              const prendaEncontrada = infoPrendas.find(
+                                (p) => p.name === resValidCupon.promocion.prenda
+                              );
+                              dscFinal = prendaEncontrada.price * resValidCupon.promocion.descuento;
+                            }
                           }
 
                           const cuponActual = {
@@ -1360,8 +1437,9 @@ const OrdenServicio = ({ mode, action, onAction, iEdit, onReturn, iDelivery }) =
                             descripcion: resValidCupon.promocion.descripcion,
                             prenda: resValidCupon.promocion.prenda,
                             nMultiplicador: resValidCupon.promocion.descuento,
-                            descuento: resValidCupon.promocion.tipo === 'Descuento' ? 0 : dscFinal,
-                            tipo: resValidCupon.promocion.tipo,
+                            descuento: dscFinal,
+                            tipoDescuento: resValidCupon.promocion.tipoDescuento,
+                            tipoPromocion: resValidCupon.promocion.tipoPromocion,
                           };
 
                           setListCupones([...listCupones, cuponActual]);
@@ -1396,7 +1474,7 @@ const OrdenServicio = ({ mode, action, onAction, iEdit, onReturn, iDelivery }) =
           setIsPromocion(false);
           formik.setFieldValue('gift_promo', []);
         }}
-        size={550}
+        size={650}
         scrollAreaComponent={ScrollArea.Autosize}
         title="¿ Deseas entregar uno o mas cupones de Promocion ?"
         centered

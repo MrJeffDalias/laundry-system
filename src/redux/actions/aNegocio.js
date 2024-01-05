@@ -1,6 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { Notify } from '../../utils/notify/Notify';
+import { socket } from '../../utils/socket/connect';
 
 export const GetInfoNegocio = createAsyncThunk('negocio/GetInfoNegocio', async () => {
   try {
@@ -17,6 +18,7 @@ export const UpdateInfoNegocio = createAsyncThunk('negocio/UpdateInfoNegocio', a
     const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/api/lava-ya/update-info-negocio`, info);
     const data = response.data;
 
+    socket.emit('client:cNegocio', data);
     return data;
   } catch (error) {
     console.log(error.response.data.mensaje);

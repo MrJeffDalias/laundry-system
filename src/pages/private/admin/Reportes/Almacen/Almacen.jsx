@@ -22,6 +22,7 @@ import { Notify } from '../../../../../utils/notify/Notify';
 import { socket } from '../../../../../utils/socket/connect';
 import { useDispatch } from 'react-redux';
 import { LS_updateListOrder } from '../../../../../redux/states/service_order';
+import { simboloMoneda } from '../../../../../services/global';
 
 const Almacen = () => {
   const [loading, setLoading] = useState(false);
@@ -241,7 +242,7 @@ const Almacen = () => {
       Producto: handleProductoCantidad(info.Producto),
       DetalleProducto: info.Producto,
       //cantidad: handleCantidad(d.Producto),
-      totalNeto: `S/${info.totalNeto}`,
+      totalNeto: `${simboloMoneda} ${info.totalNeto}`,
       Celular: info.celular,
       Pago: info.Pago,
       MetodoPago: info.metodoPago,

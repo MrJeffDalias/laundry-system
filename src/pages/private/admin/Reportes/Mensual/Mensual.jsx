@@ -8,8 +8,10 @@ import { Text } from '@mantine/core';
 import { modals } from '@mantine/modals';
 import { MonthPickerInput } from '@mantine/dates';
 import './mensual.scss';
-import { Notify } from '../../../../../utils/notify/Notify';
+import { Notify } from '../../../../../utils/notify/notify';
 import moment from 'moment';
+import { handleProductoCantidad } from '../../../../../utils/functions';
+import { simboloMoneda } from '../../../../../services/global';
 
 const Mensual = ({ onClose }) => {
   const [datePrincipal, setDatePrincipal] = useState(new Date());
@@ -60,12 +62,12 @@ const Mensual = ({ onClose }) => {
         // Agregar la cabecera
         worksheet
           .addRow([
-            'Recibo',
+            'Orden N°',
             'Nombre',
             'Modalidad',
             'Pago',
             'Productos',
-            'Cantidad',
+            // 'Cantidad',
             'Monto',
             'Celular',
             'Documento',
@@ -78,52 +80,19 @@ const Mensual = ({ onClose }) => {
             cell.font = headerStyle.font;
           });
         response.data.forEach((item) => {
-          const productQuantities = {
-            Piezas: 0,
-            'Ropa x Kilo': 0,
-          };
-
-          const uniqueProducts = new Set();
-
-          item.Producto.forEach((producto) => {
-            const productName = producto.producto;
-            const quantity = parseFloat(producto.cantidad);
-
-            if (productName !== 'Delivery') {
-              if (productName === 'Ropa x Kilo') {
-                productQuantities[productName] += quantity;
-              } else {
-                productQuantities['Piezas'] += quantity;
-              }
-
-              uniqueProducts.add(productName);
-            }
-          });
-
-          const quantitiesArray = [];
-
-          if (productQuantities['Piezas'] > 0) {
-            quantitiesArray.push(productQuantities['Piezas'] + ' piezas');
-          }
-
-          if (productQuantities['Ropa x Kilo'] > 0) {
-            quantitiesArray.push(productQuantities['Ropa x Kilo'].toFixed(2) + ' kg');
-          }
-
-          const quantitiesText = quantitiesArray.join('\n');
-          const productsText = Array.from(uniqueProducts).join('\n');
+          const productsText = Array.from(handleProductoCantidad(item.Producto)).join('\n');
 
           worksheet.addRow([
-            item.codRecibo,
+            String(item.codRecibo).padStart(4, '0'),
             item.Nombre,
             item.Modalidad,
             item.Pago,
             productsText,
-            quantitiesText,
-            item.totalNeto,
+            // quantitiesText,
+            `${simboloMoneda} ${item.totalNeto}`,
             item.celular,
             item.dni,
-            item.metodoPago,
+            item.metodoPago.charAt(0) + item.metodoPago.slice(1).toLowerCase(),
             item.dateRecepcion.fecha,
             item.dateEntrega.fecha,
           ]);
@@ -136,19 +105,19 @@ const Mensual = ({ onClose }) => {
         });
 
         // Ajustar automáticamente el ancho de las columnas excepto "Products" basado en el contenido
-        worksheet.columns.forEach((column) => {
+        let maxLengthColumns = 0;
+        await worksheet.columns.forEach((column) => {
           if (column !== productsColumn) {
-            let maxLength = 0;
             column.eachCell({ includeEmpty: true }, (cell) => {
               const cellLength = cell.value ? cell.value.toString().length : 10;
-              maxLength = Math.max(maxLength, cellLength);
+              maxLengthColumns = Math.max(maxLengthColumns, cellLength);
             });
-            column.width = maxLength + 2; // Agrega un espacio adicional
+            column.width = maxLengthColumns + 5; // Agrega un espacio adicional
           }
         });
 
         const maxLineLengths = [];
-        worksheet.eachRow({ includeEmpty: true }, (row) => {
+        await worksheet.eachRow({ includeEmpty: true }, (row) => {
           const cell = row.getCell(5); // Obtener la celda de la columna "Products"
           const lines = cell.text.split('\n');
           let maxLength = 0;
@@ -160,7 +129,7 @@ const Mensual = ({ onClose }) => {
         });
 
         const maxLength = Math.max(...maxLineLengths);
-        productsColumn.width = maxLength;
+        productsColumn.width = maxLength + 4;
 
         // Aplicar autofiltro a todas las columnas y filas
         const totalRows = worksheet.rowCount;

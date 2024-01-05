@@ -3,6 +3,7 @@ import axios from 'axios';
 import { resetUser } from '../states/user';
 import { Notify } from '../../utils/notify/Notify';
 import { messageGeneral } from '../states/negocio';
+import { socket } from '../../utils/socket/connect';
 
 export const GetInfoUser = createAsyncThunk('user/GetInfoUser', async (headers, { dispatch }) => {
   try {
@@ -46,6 +47,8 @@ export const EditUser = createAsyncThunk('user/EditUser', async (data) => {
   try {
     const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/api/lava-ya/edit-user/${data.id}`, data);
     if (response) {
+      socket.emit('client:onChangeUser', response.data._id);
+      socket.emit('client:onUpdateUser', response.data);
       Notify('Actualizacion', 'Usuario Actualizado correctamente', 'success');
     }
     return response.data;
@@ -60,6 +63,7 @@ export const RegisterUser = createAsyncThunk('user/RegisterUser', async (data) =
   try {
     const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/lava-ya/register`, data);
     if (response) {
+      socket.emit('client:onNewUser', response.data);
       Notify(
         'Usuario Agregado Exitosamente',
         'Inicia Session para activar su cuenta, con el codigo enviado al correo',
@@ -82,6 +86,8 @@ export const DeleteUser = createAsyncThunk('user/DeleteUser', async (userId) => 
   try {
     const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/api/lava-ya/delete-user/${userId}`);
     if (response.status === 200) {
+      socket.emit('client:onDeleteUser', response.data);
+      socket.emit('client:onDeleteAccount', response.data);
       Notify('Usuario Eliminado', '', 'success');
       return userId;
     }

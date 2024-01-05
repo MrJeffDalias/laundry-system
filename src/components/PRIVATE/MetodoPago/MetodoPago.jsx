@@ -1,8 +1,11 @@
-import React, { useState } from "react";
-import "./metodoPago.scss";
+/* eslint-disable no-unused-vars */
+/* eslint-disable react/prop-types */
+import React, { useState } from 'react';
+import './metodoPago.scss';
+import { ingresoDigital } from '../../../services/global';
 
 const MetodoPago = ({ setVal, onClose, name }) => {
-  const [selectedOption, setSelectedOption] = useState("");
+  const [selectedOption, setSelectedOption] = useState('');
 
   const handleOptionChange = (event) => {
     setSelectedOption(event.target.value);
@@ -27,13 +30,11 @@ const MetodoPago = ({ setVal, onClose, name }) => {
               className="checkbox-input"
               name="metodoPago"
               value="Efectivo"
-              checked={selectedOption === "Efectivo"}
+              checked={selectedOption === 'Efectivo'}
               onChange={handleOptionChange}
             />
             <span className="checkbox-tile">
-              <span className="checkbox-icon">
-                {/* <Taxi className="custom-icon" /> */}
-              </span>
+              <span className="checkbox-icon">{/* <Taxi className="custom-icon" /> */}</span>
               <span className="checkbox-label">Efectivo</span>
             </span>
           </label>
@@ -44,15 +45,29 @@ const MetodoPago = ({ setVal, onClose, name }) => {
               type="radio"
               className="checkbox-input"
               name="metodoPago"
-              value="YAPE"
-              checked={selectedOption === "YAPE"}
+              value={ingresoDigital}
+              checked={selectedOption === ingresoDigital}
               onChange={handleOptionChange}
             />
             <span className="checkbox-tile">
-              <span className="checkbox-icon">
-                {/* <Moto className="custom-icon" /> */}
-              </span>
-              <span className="checkbox-label">YAPE</span>
+              <span className="checkbox-icon">{/* <Moto className="custom-icon" /> */}</span>
+              <span className="checkbox-label">{ingresoDigital.charAt(0) + ingresoDigital.slice(1).toLowerCase()}</span>
+            </span>
+          </label>
+        </div>
+        <div className="checkbox">
+          <label className="checkbox-wrapper">
+            <input
+              type="radio"
+              className="checkbox-input"
+              name="metodoPago"
+              value="Tarjeta"
+              checked={selectedOption === 'Tarjeta'}
+              onChange={handleOptionChange}
+            />
+            <span className="checkbox-tile">
+              <span className="checkbox-icon">{/* <Moto className="custom-icon" /> */}</span>
+              <span className="checkbox-label">Tarjeta</span>
             </span>
           </label>
         </div>

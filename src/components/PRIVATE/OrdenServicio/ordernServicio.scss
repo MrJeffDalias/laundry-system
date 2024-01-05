@@ -320,6 +320,10 @@
                             margin: auto;
                         }
                     }
+                    .mantine-Select-root {
+                        position: relative;
+                        padding-bottom: 20px;
+                    }
                 }
 
                 .tb-prod {
@@ -362,7 +366,7 @@
                     tr {
                         position: relative;
                         display: grid;
-                        grid-template-columns: 100px 150px 240px 100px 40px;
+                        grid-template-columns: 100px 170px 300px 100px 40px;
                     }
                     thead {
                         border: 1px solid #4671ea;
@@ -429,6 +433,7 @@
                                             border-color: #bfbfbf;
                                             min-height: 36px;
                                             max-height: 36px;
+                                            overflow: visible;
                                             //background: rgba(255, 255, 255, 0.6392156863);
                                             &:is(:focus, :valid) {
                                                 border-color: #4671ea;
@@ -536,7 +541,7 @@
             .footer {
                 display: flex;
                 justify-content: space-between;
-                width: 530px;
+                width: 100%;
                 margin: 18px auto;
                 .f-Pay {
                     display: flex;
@@ -618,12 +623,17 @@
                         margin: auto 10px;
                         position: absolute;
                         right: -72px;
+                        outline: none;
+                        user-select: none;
                     }
                     .ico-efect {
                         top: 2px;
                     }
-                    .ico-yape {
+                    .ico-tranf {
                         top: -5px;
+                    }
+                    .ico-card {
+                        top: -15px;
                     }
                 }
             }
@@ -672,7 +682,7 @@
                                         font-weight: 800;
                                         color: #5c4c73;
                                         font-size: 1.2em;
-                                        width: 200px;
+                                        width: 120px;
                                     }
                                 }
                             }

@@ -1,38 +1,98 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import React from 'react';
+import React, { useState } from 'react';
 import ReactToPrint from 'react-to-print';
 import Ticket from './Ticket/Ticket';
-
+import whatsappApp from './whatsappApp.png';
 import './imprimir.scss';
-import { useDispatch } from 'react-redux';
-import { setLastRegister, setOrderServiceId } from '../../../../../../redux/states/service_order';
-import { PrivateRoutes } from '../../../../../../models';
-import { useNavigate } from 'react-router-dom';
+import SwtichModel from '../../../../../../components/SwitchModel/SwitchModel';
+import { useParams } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { Notify } from '../../../../../../utils/notify/Notify';
+import { codigoPhonePais, simboloMoneda } from '../../../../../../services/global';
+import { DateDetail } from '../../../../../../utils/functions';
+import { WSendMessage } from '../../../../../../services/default.services';
+import moment from 'moment';
 
 const index = () => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
+  const { id } = useParams();
+  const infoOrden = useSelector((state) => state.orden.registered.find((item) => item._id === id));
+  const InfoNegocio = useSelector((state) => state.negocio.infoNegocio);
+
+  const [fCli, setFCli] = useState(false);
+  const [phoneA, setPhoneA] = useState(infoOrden.celular ? `${codigoPhonePais}${infoOrden.celular}` : '');
   const componentRef = React.useRef();
 
-  const handleAfterPrint = () => {
-    console.log('Después de imprimir');
-    dispatch(setOrderServiceId(false));
-    dispatch(setLastRegister());
-    navigate(`/${PrivateRoutes.PRIVATE}/${PrivateRoutes.LIST_ORDER_SERVICE}`);
+  const handleSendMessage = () => {
+    const number = phoneA;
+
+    if (number) {
+      const mensaje = `¡Hola *${infoOrden.Nombre}* ! Le saluda la *Lavanderia ${InfoNegocio.name}*, Su Orden es la *#${
+        infoOrden.codRecibo
+      }*, ${
+        infoOrden.Pago === 'Pagado' ? `ya esta *PAGADO*` : `con monto a pagar *${simboloMoneda}${infoOrden.totalNeto}*`
+      } su entrega es el día ${DateDetail(infoOrden.datePrevista.fecha)} - ${moment(
+        infoOrden.datePrevista.hora,
+        'HH:mm'
+      ).format('hh:mm A')}`;
+      for (let index = 0; index < 2; index++) {
+        WSendMessage(mensaje, number);
+      }
+    } else {
+      Notify('Cliente sin numero', '', 'fail');
+    }
   };
 
   return (
     <div className="content-to-print">
-      <ReactToPrint
-        trigger={() => (
-          <button type="button" className="btn-imprimir">
-            Imprimir Ticket
-          </button>
-        )}
-        content={() => componentRef.current}
-        onAfterPrint={handleAfterPrint}
+      <div className="action-to-print">
+        <ReactToPrint
+          trigger={() => (
+            <button type="button" className="btn-imprimir">
+              Imprimir Ticket
+            </button>
+          )}
+          content={() => componentRef.current}
+        />
+        {phoneA ? (
+          <div className="send-whatsapp">
+            <button
+              type="button"
+              onClick={() => {
+                handleSendMessage('App');
+              }}
+              className="btn-send-whatsapp app"
+            >
+              <img src={whatsappApp} alt="" />
+            </button>
+            <div className="info-cel">
+              <label htmlFor="">Numero Celular :</label>
+              <input
+                type="number"
+                onDragStart={(e) => e.preventDefault()}
+                defaultValue={phoneA}
+                onChange={(e) => {
+                  const inputValue = e.target.value;
+                  const validInput = inputValue ? inputValue.replace(/[^0-9.]/g, '') : '';
+                  setPhoneA(validInput);
+                }}
+              />
+            </div>
+          </div>
+        ) : null}
+      </div>
+      <SwtichModel
+        title="Descripcion :"
+        onSwitch="Mostrar" // ON = TRUE
+        offSwitch="Ocultar" // OFF = FALSE
+        name="descripcion"
+        defaultValue={false}
+        colorBackground="#45c877" // COLOR FONDO
+        onChange={() => {
+          // value = (TRUE O FALSE)
+          setFCli(!fCli);
+        }}
       />
-      <Ticket ref={componentRef} />
+      <Ticket ref={componentRef} forW={fCli} infoOrden={infoOrden} InfoNegocio={InfoNegocio} />
     </div>
   );
 };

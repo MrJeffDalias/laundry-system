@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import { PublicRoutes } from '../../../../models';
 import { TextInput } from '@mantine/core';
 import { Notify } from '../../../../utils/notify/Notify';
+import { socket } from '../../../../utils/socket/connect';
 
 const Indentify = () => {
   const navigate = useNavigate();
@@ -105,6 +106,7 @@ const Indentify = () => {
         info.data
       );
       if (response.status === 200) {
+        socket.emit('client:onChangeUser', response.data._id);
         Notify('Nueva contraseña creada existosamentea', '', 'success');
         navigate(`/${PublicRoutes.LOGIN}`, { replace: true });
       }

@@ -23,6 +23,7 @@ import { PrivateRoutes } from '../../../../../../models';
 import './endProcess.scss';
 import { socket } from '../../../../../../utils/socket/connect';
 import { Notify } from '../../../../../../utils/notify/Notify';
+import { simboloMoneda } from '../../../../../../services/global';
 
 const EndProcess = ({ IdCliente, onClose }) => {
   const navigate = useNavigate();
@@ -237,7 +238,9 @@ const EndProcess = ({ IdCliente, onClose }) => {
           >
             {({ handleSubmit, setFieldValue, isSubmitting, values, errors, touched }) => (
               <Form onSubmit={handleSubmit} className="content-pE">
-                <h1>S/. {infoCliente.totalNeto}</h1>
+                <h1>
+                  {simboloMoneda} {infoCliente.totalNeto}
+                </h1>
                 <div className="trasporte-pago">
                   {infoCliente.Pago === 'Pendiente' ? (
                     <Pagar setFieldValue={setFieldValue} errors={errors} touched={touched} />

@@ -18,6 +18,7 @@ import { GetInfoUser } from '../../../redux/actions/aUser';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { Notify } from '../../../utils/notify/Notify';
+import { socket } from '../../../utils/socket/connect';
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -49,8 +50,9 @@ const Login = () => {
     try {
       const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/lava-ya/first-login`, firstLogin);
       if (response.status === 200) {
+        socket.emit('client:onFirtLogin', response.data.id);
         close();
-        handleGetInfoUser(response.data);
+        handleGetInfoUser(response.data.token);
       }
     } catch (error) {
       Notify(error.response.data.mensaje, '', 'fail');
@@ -112,6 +114,7 @@ const Login = () => {
       });
 
       if (res.status === 200) {
+        socket.emit('client:onLogin', res.data.id);
         if (res.data.type === 'token') {
           const token = res.data.info;
           handleGetInfoUser(token);

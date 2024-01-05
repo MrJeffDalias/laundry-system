@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "dependencies": {
+    "@fontsource/source-sans-pro": "^5.0.8",
     "@fortawesome/fontawesome-free": "6.4.0",
     "@mantine/core": "6.0.13",
     "@mantine/dates": "6.0.13",
@@ -29,7 +30,6 @@
     "sass": "^1.66.0",
     "socket.io-client": "^4.7.2",
     "styled-components": "6.0.5",
-    "tsparticles": "^2.12.0",
     "vite-plugin-svgr": "3.2.0",
     "xlsx": "^0.18.5",
     "yup": "1.2.0"

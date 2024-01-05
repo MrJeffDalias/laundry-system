@@ -19,6 +19,7 @@ import { Notify } from '../../../../../utils/notify/Notify';
 import { socket } from '../../../../../utils/socket/connect';
 import { useDispatch } from 'react-redux';
 import { LS_updateListOrder } from '../../../../../redux/states/service_order';
+import { simboloMoneda } from '../../../../../services/global';
 
 const Pendientes = () => {
   const [rowSelection, setRowSelection] = useState([]);
@@ -100,7 +101,7 @@ const Pendientes = () => {
       Producto: handleProductoCantidad(d.Producto),
       DetalleProducto: d.Producto,
       //cantidad: handleCantidad(d.Producto),
-      totalNeto: `S/${d.totalNeto}`,
+      totalNeto: `${simboloMoneda} ${d.totalNeto}`,
       Celular: d.celular,
       Pago: d.Pago,
       MetodoPago: d.metodoPago,

@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import moment from 'moment';
+import { simboloMoneda } from '../../../../../services/global';
 
 const Detalle = ({ infoD }) => {
   const [ordern, setOrder] = useState();
@@ -82,7 +83,9 @@ const Detalle = ({ infoD }) => {
                 <span>{handleDescDelivery(e.descripcion)}</span>
               </div>
               <div className="cant_d">
-                <span>S/ {e.monto}</span>
+                <span>
+                  {simboloMoneda} {e.monto}
+                </span>
               </div>
             </div>
           ))}
@@ -173,7 +176,9 @@ const Detalle = ({ infoD }) => {
               <span>Descuento</span>
             </div>
             <div className="monto">
-              <span>S/ {ordern?.Descuento}</span>
+              <span>
+                {simboloMoneda} {ordern?.Descuento}
+              </span>
             </div>
           </div>
         ) : null}

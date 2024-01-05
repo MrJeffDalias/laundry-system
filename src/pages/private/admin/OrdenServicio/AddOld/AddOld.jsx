@@ -19,8 +19,9 @@ import './addOld.scss';
 
 import { ReactComponent as Eliminar } from '../../../../../utils/img/OrdenServicio/eliminar.svg';
 
-import Yape from '../../../../../utils/img/OrdenServicio/Yape.png';
+import Tranferencia from '../../../../../utils/img/OrdenServicio/Transferencia.png';
 import Efectivo from '../../../../../utils/img/OrdenServicio/dinero.png';
+import Tarjeta from '../../../../../utils/img/OrdenServicio/card.png';
 
 import Tag from '../../../../../components/Tag/Tag';
 
@@ -33,6 +34,7 @@ import { PrivateRoutes } from '../../../../../models';
 import axios from 'axios';
 
 import { AddOrdenServices } from '../../../../../redux/actions/aOrdenServices';
+import { documento, ingresoDigital, nameImpuesto, simboloMoneda } from '../../../../../services/global';
 
 const AddOld = () => {
   const infoPrendas = useSelector((state) => state.prenda.infoPrendas);
@@ -40,17 +42,18 @@ const AddOld = () => {
   const infoNegocio = useSelector((state) => state.negocio.infoNegocio);
 
   const { InfoImpuesto, InfoPuntos } = useSelector((state) => state.modificadores);
+  const codFinal = useSelector((state) => state.codigo.infoCodigo.codFinal);
 
   const [isPortal, setIsPortal] = useState(false);
 
   // Lista de clientes
   const [infoClientes, setInfoClientes] = useState([]);
-  // Puntos del cliente Actual
+  // // Puntos del cliente Actual
   const [dataScore, setDataScore] = useState(false);
-  // valor por puntos
+  // // valor por puntos
   const [vScore, setVScore] = useState(null);
-  // IGV
-  const [igv, setIGV] = useState(null);
+  // Impuesto
+  const [impuesto, setImpuesto] = useState(null);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -67,7 +70,7 @@ const AddOld = () => {
       }),
   });
 
-  const getProductValue = (nombre) => {
+  const getPricePrenda = (nombre) => {
     const garment = infoPrendas.find((prenda) => prenda.name.toLowerCase() === nombre.toLowerCase());
     if (garment) {
       return garment.price;
@@ -104,7 +107,7 @@ const AddOld = () => {
           promocion: 0,
         },
         igv: {
-          valor: igv,
+          valor: impuesto,
           importe: 0,
         },
       },
@@ -127,17 +130,17 @@ const AddOld = () => {
       onConfirm: () => handleGetInfo(data),
     });
 
-  const addRowGarment = (tipo, producto, precio, stateCantidad, categoria) => {
+  const addRowGarment = (/*tipo, */ producto, precio, stateCantidad /*, categoria*/) => {
     const newRow = {
       stado: stateCantidad,
       price: precio,
-      type: tipo,
-      cantidad: stateCantidad === false ? 1 : 1,
+      type: 'Prenda',
+      cantidad: 1,
       producto: producto,
       descripcion: '',
       expanded: false,
       total: precio,
-      categoria: categoria,
+      // categoria: categoria,
     };
     return newRow;
   };
@@ -164,7 +167,6 @@ const AddOld = () => {
       descripcion: p.descripcion,
       precio: p.price,
       total: p.total,
-      categoria: p.categoria,
     }));
 
     const infoRecibo = {
@@ -228,11 +230,6 @@ const AddOld = () => {
     });
   };
 
-  // const handleTextareaHeight = (textarea) => {
-  //   const scrollHeight = textarea.scrollHeight;
-  //   textarea.style.height = `${scrollHeight - 13}px`;
-  // };
-
   const handleGetClientes = async (dni) => {
     try {
       const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/lava-ya/get-clientes/${dni}`);
@@ -242,27 +239,6 @@ const AddOld = () => {
       console.error('Error al obtener los datos:', error.message);
     }
   };
-
-  // const handleScrollTop = (id) => {
-  //   const element = document.getElementById(id);
-  //   if (element instanceof HTMLTextAreaElement) {
-  //     element.scrollTop = 0;
-  //   }
-  // };
-
-  // const handleGetDay = (date) => {
-  //   const formattedDayOfWeek = dayjs(date).format('dddd');
-
-  //   return `${formattedDayOfWeek} : `;
-  // };
-
-  // const MontoxPoints = (xpoints) => {
-  //   const puntos = parseFloat(vScore.score);
-  //   const valor = parseFloat(vScore.valor);
-  //   const equivalenteEnSoles = (xpoints / puntos) * valor;
-
-  //   return equivalenteEnSoles;
-  // };
 
   const validIco = (mensaje) => {
     return (
@@ -294,7 +270,7 @@ const AddOld = () => {
     setVScore(InfoPuntos);
 
     formik.setFieldValue('cargosExtras.igv.valor', InfoImpuesto.IGV);
-    setIGV(InfoImpuesto.IGV);
+    setImpuesto(InfoImpuesto.IGV);
   }, [InfoPuntos, InfoImpuesto]);
 
   useEffect(() => {
@@ -305,12 +281,12 @@ const AddOld = () => {
 
   useEffect(() => {
     const subTotal = formik.values.subTotal;
-    let montoIGV = 0;
+    let montoImpuesto = 0;
     if (formik.values.factura === true) {
-      montoIGV = +(subTotal * igv).toFixed(2);
+      montoImpuesto = +(subTotal * impuesto).toFixed(2);
     }
-    formik.setFieldValue('cargosExtras.igv.importe', montoIGV);
-    const total = subTotal + montoIGV;
+    formik.setFieldValue('cargosExtras.igv.importe', montoImpuesto);
+    const total = subTotal + montoImpuesto;
     const descuento = formik.values.cargosExtras.descuentos.puntos;
     formik.setFieldValue('descuento', descuento);
     const totalNeto = total - descuento;
@@ -322,7 +298,6 @@ const AddOld = () => {
     formik.values.factura,
     formik.values.subTotal,
   ]);
-
   return (
     <div className="space-ra">
       <div className="title-action">
@@ -333,7 +308,7 @@ const AddOld = () => {
         <div className="info-ra">
           <>
             <div className="space-paralelos">
-              <div style={{ width: '82%', margin: '0 auto' }}>
+              <div className="paralelo">
                 <Autocomplete
                   name="dni"
                   onChange={(dni) => {
@@ -345,8 +320,8 @@ const AddOld = () => {
                     formik.setFieldValue('cargosExtras.descuentos.puntos', 0);
                     formik.setFieldValue('cargosExtras.beneficios.puntos', 0);
                   }}
-                  label="DNI:"
-                  placeholder="Ingrese DNI"
+                  label={`${documento} :`}
+                  placeholder={`Ingrese ${documento}`}
                   defaultValue={formik.values.dni}
                   onItemSubmit={(selected) => {
                     const cliente = infoClientes.find((obj) => obj.dni === selected.value);
@@ -368,7 +343,7 @@ const AddOld = () => {
                     }}
                     min={1}
                     step={1}
-                    max={1000}
+                    max={+codFinal}
                     hideControls
                     autoComplete="off"
                   />
@@ -394,7 +369,7 @@ const AddOld = () => {
                   autoComplete="off"
                 />
               </div>
-              <div style={{ width: '70%', margin: '0 auto' }}>
+              <div className="paralelo">
                 <div className="space-info">
                   <DateInput
                     label="Fecha Recojo :"
@@ -484,9 +459,9 @@ const AddOld = () => {
                           price: 0,
                           producto: 'Delivery',
                           stado: true,
-                          total: getProductValue('Delivery'),
+                          total: getPricePrenda('Delivery'),
                           type: 'Delivery',
-                          categoria: 'Delivery',
+                          // categoria: 'Delivery',
                         },
                       ]);
                     }
@@ -510,12 +485,12 @@ const AddOld = () => {
               <div className="actions">
                 <div className="button-actions">
                   <BotonModel
-                    name="Agregar Edredon"
+                    name="Agregar Toalla"
                     tabI="6"
                     listenClick={() =>
                       formik.setFieldValue('productos', [
                         ...formik.values.productos,
-                        addRowGarment('productos', 'Edredon', getProductValue('Edredon'), true, 'Edredon'),
+                        addRowGarment('Toalla', getPricePrenda('Toalla'), false),
                       ])
                     }
                   />
@@ -525,16 +500,16 @@ const AddOld = () => {
                     listenClick={() =>
                       formik.setFieldValue('productos', [
                         ...formik.values.productos,
-                        addRowGarment('productos', 'Ropa x Kilo', getProductValue('Ropa x Kilo'), true, 'Ropa x Kilo'),
+                        addRowGarment('Ropa x Kilo', getPricePrenda('Ropa x Kilo'), false),
                       ])
                     }
                   />
                 </div>
                 <InputSelectedPrenda
-                  listenClick={(type, producto, precio, estado, categoria) =>
+                  listenClick={(/*type, */ producto, precio, estado /*, categoria*/) =>
                     formik.setFieldValue('productos', [
                       ...formik.values.productos,
-                      addRowGarment(type, producto, precio, estado, categoria),
+                      addRowGarment(/*type, */ producto, precio, estado /*, categoria*/),
                     ])
                   }
                   tabI={'8'}
@@ -697,7 +672,9 @@ const AddOld = () => {
                         : null} */}
                     </td>
                     <td>Subtotal :</td>
-                    <td>S/ {formik.values.subTotal}</td>
+                    <td>
+                      {simboloMoneda} {formik.values.subTotal}
+                    </td>
                     <td></td>
                   </tr>
                   <tr>
@@ -722,8 +699,12 @@ const AddOld = () => {
                     </td>
                     {formik.values.factura ? (
                       <>
-                        <td>IGV ({(igv * 100).toFixed(0)} %) :</td>
-                        <td>S/ {formik.values.cargosExtras.igv.importe}</td>
+                        <td>
+                          {nameImpuesto} ({(InfoImpuesto * 100).toFixed(0)} %) :
+                        </td>
+                        <td>
+                          {simboloMoneda} {formik.values.cargosExtras.igv.importe}
+                        </td>
                       </>
                     ) : (
                       <>
@@ -736,13 +717,15 @@ const AddOld = () => {
                   <tr>
                     <td></td>
                     {/* <td>Descuento :</td> */}
-                    {/* <td>S/ {formik.values.descuento}</td> */}
+                    {/* <td>{simboloMoneda} {formik.values.descuento}</td> */}
                     <td></td>
                   </tr>
                   <tr>
                     <td></td>
                     <td>Total :</td>
-                    <td>S/ {formik.values.totalNeto}</td>
+                    <td>
+                      {simboloMoneda} {formik.values.totalNeto}
+                    </td>
                     <td></td>
                   </tr>
                 </tfoot>
@@ -787,8 +770,21 @@ const AddOld = () => {
                 </div>
                 {formik.values.metodoPago !== '' ? (
                   <img
-                    className={formik.values.metodoPago === 'Efectivo' ? 'ico-efect' : 'ico-yape'}
-                    src={formik.values.metodoPago === 'Efectivo' ? Efectivo : Yape}
+                    tabIndex="-1"
+                    className={
+                      formik.values.metodoPago === 'Efectivo'
+                        ? 'ico-efect'
+                        : formik.values.metodoPago === ingresoDigital
+                        ? 'ico-tranf'
+                        : 'ico-card'
+                    }
+                    src={
+                      formik.values.metodoPago === 'Efectivo'
+                        ? Efectivo
+                        : formik.values.metodoPago === ingresoDigital
+                        ? Tranferencia
+                        : Tarjeta
+                    }
                     alt=""
                   />
                 ) : null}

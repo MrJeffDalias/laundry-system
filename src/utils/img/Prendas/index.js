@@ -13,12 +13,30 @@ import Manta from './manta.png';
 import Pantalon from './pantalon.png';
 import Polo from './polo.png';
 import Saco from './saco.png';
+import SacoLargo from './saco-largo.png';
 import Tapete from './tapete.png';
 import Terno from './terno.png';
 import Zapatillas from './zapatillas.png';
 import Edredon from './edredon.png';
+import Peluche from './peluche.png';
+import Hamaca from './hamaca.png';
+import CubreColchon from './cubrecolchon.png';
+import Funda from './funda.png';
+import LavadoMano from './lavado-mano.png';
+import Sabanas from './sabanas.png';
 
-const images = {
+import Planchado from './planchado.png';
+import Suavitel from './suavitel.png';
+import Bolsa from './bolsa.png';
+import Vernel from './vernel.png';
+import Refresco from './refresco.png';
+import Jugo from './jugo.png';
+import Clorets from './clorets.png';
+import Trident from './trident.png';
+import Sabritas from './sabritas.png';
+import Paletas from './paletas.png';
+
+const Prendas = {
   Abrigo,
   Alfombra,
   Almohada,
@@ -34,10 +52,27 @@ const images = {
   Pantalon,
   Polo,
   Saco,
+  SacoLargo,
   Tapete,
   Terno,
   Zapatillas,
   Edredon,
+  Peluche,
+  Hamaca,
+  CubreColchon,
+  Funda,
+  LavadoMano,
+  Sabanas,
+  Planchado,
+  Suavitel,
+  Bolsa,
+  Vernel,
+  Refresco,
+  Jugo,
+  Clorets,
+  Trident,
+  Sabritas,
+  Paletas,
 };
 
-export default images;
+export default Prendas;

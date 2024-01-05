@@ -87,13 +87,15 @@ export const handleUseCupon = async (codigo) => {
 
 export const handleRegisterCupon = async (Promotions) => {
   try {
-    await Promise.all(
+    const responses = await Promise.all(
       Promotions.map(async (p) => {
-        await axios.post(`${baseURL}/generar-cupon`, p);
+        return await axios.post(`${baseURL}/generar-cupon`, p);
       })
     );
+
+    return responses; // Devuelve la matriz de respuestas
   } catch (error) {
-    // Puedes manejar los errores aquí
+    // Maneja los errores aquí
     throw new Error(`No se pudo actualizar el cliente - ${error}`);
   }
 };
@@ -119,4 +121,11 @@ export const LogoutUser = async (token) => {
     // Puedes manejar los errores aquí
     throw new Error('No se pudieron obtener los datos del usuario');
   }
+};
+
+export const WSendMessage = (mensaje, phone) => {
+  let webUrl;
+  webUrl = `whatsapp://send?phone=${phone}&text=${encodeURIComponent(mensaje)}`;
+
+  window.open(webUrl, '_blank');
 };

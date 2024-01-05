@@ -14,6 +14,7 @@ import { modals } from '@mantine/modals';
 import { Text } from '@mantine/core';
 
 import './gastos.scss';
+import { simboloMoneda } from '../../../../services/global';
 
 const Gasto = ({ onClose }) => {
   const dispatch = useDispatch();
@@ -83,10 +84,10 @@ const Gasto = ({ onClose }) => {
                 <NumberInput
                   name="monto"
                   value={values.monto}
-                  parser={(value) => value.replace(/S\/\s?|(,*)/g, '')}
+                  parser={(value) => value.replace(new RegExp(`${simboloMoneda}\\s?|(,*)`, 'g'), '')}
                   formatter={(value) =>
                     !Number.isNaN(parseFloat(value))
-                      ? `S/ ${value}`.replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ',')
+                      ? `${simboloMoneda} ${value}`.replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ',')
                       : ''
                   }
                   placeholder="Ingrese Monto"
