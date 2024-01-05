@@ -8,7 +8,7 @@ import { Text } from '@mantine/core';
 import { modals } from '@mantine/modals';
 import { MonthPickerInput } from '@mantine/dates';
 import './mensual.scss';
-import { Notify } from '../../../../../utils/notify/notify';
+import { Notify } from '../../../../../utils/notify/Notify';
 import moment from 'moment';
 import { handleProductoCantidad } from '../../../../../utils/functions';
 import { simboloMoneda } from '../../../../../services/global';
