@@ -109,7 +109,7 @@ const Ticket = React.forwardRef((props, ref) => {
         <div className="container-ticket" ref={ref}>
           <div className="body-orden-service">
             <div className="receipt_header">
-              <h1>LAVANDERIA {InfoNegocio?.name}</h1>
+              <h1>LAVANDERIA Y TINTORERIA {InfoNegocio?.name}</h1>
               <table className="info-table">
                 <tbody>
                   <tr>
