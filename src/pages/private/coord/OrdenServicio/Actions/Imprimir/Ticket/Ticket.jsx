@@ -278,7 +278,7 @@ const Ticket = React.forwardRef((props, ref) => {
               <h3 className={`${infoOrden.factura ? null : 'sf'} estado`}>
                 {infoOrden.Pago === 'Pagado' ? 'PAGADO' : 'PENDIENTE'}
               </h3>
-              {infoOrden.factura ? <h2 className="cangeo-factura">Cangear Orden de Servicio por Factura</h2> : null}
+              {infoOrden.factura ? <h2 className="cangeo-factura">Canjear Orden de Servicio por Factura</h2> : null}
             </div>
             <p className="aviso">
               NOTA: <span>{politicaAbandono.mResaltado}</span>
@@ -298,7 +298,7 @@ const Ticket = React.forwardRef((props, ref) => {
                     <img src={Pet} alt="" />
                   </div>
                   <div className="notice">
-                    <span>CANGEALO EN TU PROXIMA ORDEN</span>
+                    <span>CANJEELO EN TU PROXIMA ORDEN</span>
                   </div>
                   <h2 className="vigencia">Vencimiento : {calcularFechaFutura(promo.vigencia)}</h2>
                 </div>
