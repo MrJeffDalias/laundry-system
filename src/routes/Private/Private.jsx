@@ -30,7 +30,7 @@ import Negocio from '../../pages/private/admin/Setting/Negocio/Negocio';
 import Impuestos from '../../pages/private/admin/Setting/Impuestos/Impuestos';
 import Usuarios from '../../pages/private/admin/Setting/Usuarios/Usuarios';
 import Metas from '../../pages/private/admin/Setting/Metas/Metas';
-import { oldOrder } from '../../services/global';
+import { oldRecords } from '../../services/global';
 
 const Private = () => {
   return (
@@ -50,7 +50,7 @@ const Private = () => {
           <Route path={PrivateRoutes.SETTING_POINT} element={<Points />} />
           <Route path={PrivateRoutes.SETTING_TAXES} element={<Impuestos />} />
           <Route path={PrivateRoutes.SETTING_GOALS} element={<Metas />} />
-          {oldOrder ? <Route path={PrivateRoutes.REGISTER_OLDS} element={<AddOld />} /> : null}
+          {oldRecords ? <Route path={PrivateRoutes.REGISTER_OLDS} element={<AddOld />} /> : null}
           <Route path={PrivateRoutes.REPORTES} element={<Reportes />} />
           <Route path={PrivateRoutes.REPORTE_MENSUAL} element={<Mensual />} />
           <Route path={PrivateRoutes.REPORTE_PENDIENTES} element={<Pendientes />} />

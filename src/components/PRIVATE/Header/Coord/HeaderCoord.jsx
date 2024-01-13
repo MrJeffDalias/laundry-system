@@ -4,11 +4,9 @@ import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Link, useLocation } from 'react-router-dom';
 import { PrivateRoutes, Roles } from '../../../../models/index';
-import Logo from '../../../../utils/img/Logo/logo.png';
 import Logout from '../../Logout/Logout';
 import './headerCoord.scss';
-import { INFO_COMPANY } from '../../../../utils/infoSystem/infoSystem';
-import { oldOrder } from '../../../../services/global';
+import { oldRecords } from '../../../../services/global';
 
 const HeaderUser = () => {
   const userState = useSelector((store) => store.user.infoUsuario);
@@ -169,7 +167,7 @@ const HeaderUser = () => {
               <li className="pages-admin">
                 <Link to={`./${PrivateRoutes.SETTING}`}>Ajustes</Link>
               </li>
-              {oldOrder ? (
+              {oldRecords ? (
                 <li>
                   <Link to={`./${PrivateRoutes.REGISTER_OLDS}`}>Registro Antiguos</Link>
                 </li>
