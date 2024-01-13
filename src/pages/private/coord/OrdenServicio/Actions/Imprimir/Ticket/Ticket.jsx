@@ -26,7 +26,7 @@ const Ticket = React.forwardRef((props, ref) => {
   const calcularFechaFutura = (numeroDeDias) => {
     const fechaActual = moment();
     const nuevaFecha = fechaActual.clone().add(numeroDeDias, 'days');
-    return nuevaFecha.format('D [de] MMMM[, del] YYYY');
+    return nuevaFecha.format('DD / MM / YYYY');
   };
 
   const handleGetInfoPromo = async (codigoCupon) => {
@@ -148,7 +148,7 @@ const Ticket = React.forwardRef((props, ref) => {
             </div>
             <div className="info-client">
               <div className="cod-rec">
-                <h1 className="cod-rec">ORDEN DE SERVICIO : {String(infoOrden.codRecibo).padStart(4, '0')}</h1>
+                <h1 className="cod-rec">N° Orden : {infoOrden.codRecibo}</h1>
               </div>
               <div className="info-detail">
                 <table className="tb-date">
@@ -199,18 +199,18 @@ const Ticket = React.forwardRef((props, ref) => {
               <div className="items">
                 <table>
                   <thead>
-                    {/* <tr>
+                    <tr>
                       <th>ID</th>
                       <th>Item</th>
                       <th>Cant</th>
                       <th>Subt</th>
-                    </tr> */}
-                    <tr>
+                    </tr>
+                    {/* <tr>
                       <th>ID</th>
                       <th>Item</th>
                       <th>Cantidad</th>
                       <th>Subtotal</th>
-                    </tr>
+                    </tr> */}
                   </thead>
                   <tbody>
                     {infoOrden.Producto.filter((p) => p.categoria !== 'Delivery').map((p, index) => (
@@ -314,7 +314,7 @@ const Ticket = React.forwardRef((props, ref) => {
                   <div className="notice">
                     <span>CÁNJELO EN SU PRÓXIMA ORDEN</span>
                   </div>
-                  <h2 className="vigencia" style={{ float: 'right', fontSize: '0.78em' }}>
+                  <h2 className="vigencia" style={{ float: 'right', fontSize: '0.85em' }}>
                     Vencimiento : {calcularFechaFutura(promo.vigencia)}
                   </h2>
                 </div>
