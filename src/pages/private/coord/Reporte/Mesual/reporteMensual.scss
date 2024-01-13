@@ -29,6 +29,7 @@
             .table-container {
                 height: 100%;
                 table {
+                    zoom: 0.8;
                     border-collapse: collapse;
                     table-layout: fixed;
                     margin: 10px auto;
@@ -36,7 +37,7 @@
                     tr {
                         position: relative;
                         display: grid;
-                        grid-template-columns: 160px 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+                        grid-template-columns: 161px 100px 120px 110px 130px 100px 100px 80px 100px 100px 100px;
                     }
                     thead {
                         tr {

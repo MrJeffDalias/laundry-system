@@ -3,6 +3,7 @@
 /* eslint-disable no-unused-vars */
 import React, { useEffect } from 'react';
 
+import Prendas from '../../../../../utils/img/Prendas/index';
 import { GetDeliverysID } from '../../../../../redux/actions/aDelivery';
 import './detalle.scss';
 import { useState } from 'react';
@@ -10,9 +11,11 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import moment from 'moment';
 import { simboloMoneda } from '../../../../../services/global';
+import { DateDetail_Hora, cLetter, handleGetInfoPago } from '../../../../../utils/functions';
 
 const Detalle = ({ infoD }) => {
   const [ordern, setOrder] = useState();
+  const [statePago, setStatePago] = useState();
   const dispatch = useDispatch();
   const iDelivery = useSelector((state) => state.delivery.infoDeliveryID);
 
@@ -67,6 +70,10 @@ const Detalle = ({ infoD }) => {
 
   useEffect(() => {
     setOrder(infoD);
+    if (infoD) {
+      const sPago = handleGetInfoPago(infoD.ListPago, infoD.totalNeto);
+      setStatePago(sPago);
+    }
   }, [infoD]);
 
   return (
@@ -185,7 +192,63 @@ const Detalle = ({ infoD }) => {
       </div>
       <div className="more-a">
         <h3>Total: {ordern?.totalNeto}</h3>
-        <h2>{ordern?.Pago}</h2>
+      </div>
+      <div className="list-pagos">
+        <div className="title">Lista de Pagos</div>
+        <ul>
+          {ordern?.ListPago.map((p, index) => (
+            <li className="i-pago" key={index}>
+              <span className="_fecha">{DateDetail_Hora(p.date.fecha, p.date.hora)}</span>
+              <span className="_monto">
+                {simboloMoneda}
+                {p.total}
+              </span>
+              <span className="_metodopago">{cLetter(p.metodoPago)}</span>
+              <span className="_ico">
+                {p.metodoPago === 'Tarjeta' ? (
+                  <i className="fa-solid fa-credit-card" />
+                ) : p.metodoPago === 'Efectivo' ? (
+                  <i className="fa-solid fa-sack-dollar" />
+                ) : (
+                  <i className="fa-solid fa-money-bill-transfer" />
+                )}
+              </span>
+            </li>
+          ))}
+          <li className="i-final">
+            <span></span>
+            <span className="if-estado"></span>
+            <span className="if-monto">
+              <div>
+                <div className="l-info">
+                  <span>Subtotal :</span>
+                </div>
+                <div>
+                  {simboloMoneda}
+                  {statePago?.pago}
+                </div>
+              </div>
+              <div>
+                <div className="l-info">
+                  <span>Estado :</span>
+                </div>
+                <div> {statePago?.estado}</div>
+              </div>
+              {statePago?.estado !== 'Completo' ? (
+                <div>
+                  <div className="l-info">
+                    <span>Falta :</span>
+                  </div>
+                  <div>
+                    {simboloMoneda}
+                    {statePago?.falta}
+                  </div>
+                </div>
+              ) : null}
+            </span>
+            <span></span>
+          </li>
+        </ul>
       </div>
       <table className="info-table">
         <tbody>
@@ -201,15 +264,6 @@ const Detalle = ({ infoD }) => {
               {handleDateLarge(ordern?.FechaPrevista.fecha)} / {handleHour(ordern?.FechaPrevista.hora)}
             </td>
           </tr>
-          {ordern?.Pago === 'Pagado' ? (
-            <tr>
-              <td>Fecha Pago:</td>
-              <td>
-                {handleDateLarge(ordern?.FechaPago.fecha)} / {handleHour(ordern?.FechaPago.hora)}
-                <div className="md-pago">{ordern?.Pago === 'Pagado' ? `Pago por : ${ordern?.MetodoPago}` : null}</div>
-              </td>
-            </tr>
-          ) : null}
         </tbody>
       </table>
     </div>

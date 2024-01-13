@@ -1,15 +1,14 @@
 // Zona Horaria
-// export const timeZone = 'America/Mexico_City'; //
-export const timeZone = 'America/Lima'; //
+export const timeZone = 'America/Mexico_City';
 // Mostrar Opcion de Registrar Ordenes Antiguas
-export const oldOrder = true;
+export const oldRecords = true;
 // Tipo de Moneda
-export const tipoMoneda = 'MXN'; // PEN
+export const tipoMoneda = 'MXN';
 // Formato de la moneda (separacion de miles - decimales) segun la configuracion regional
-export const confMoneda = 'es-MX'; // es-PE
-export const simboloMoneda = '$'; // S/
-export const nameMoneda = 'Pesos'; // Soles
-export const ingresoDigital = 'TRANSFERENCIA'; // YAPE
+export const confMoneda = 'es-MX';
+export const simboloMoneda = '$';
+export const nameMoneda = 'Pesos';
+export const ingresoDigital = 'TRANSFERENCIA';
 
 export const politicaAbandono = {
   mResaltado: 'El plazo maximo para retirar las prendas es de 20 dias ',
@@ -19,9 +18,9 @@ export const politicaAbandono = {
     La indemnización por ropa perdida o malograda se ajusta de acuerdo a la ley de Profeco que equivale a 3 veces del valor de la nota total de venta.`,
 };
 
-export const documento = 'INE'; // DNI
+export const documento = 'INE';
 
-export const nameImpuesto = 'IVA'; // IGV
+export const nameImpuesto = 'IVA';
 
 export const codigoPhonePais = '52';
 
@@ -39,5 +38,4 @@ export const MONTOS_BASE = [
   { monto: 0.5, cantidad: '', total: 0 },
   { monto: 0.2, cantidad: '', total: 0 },
   { monto: 0.1, cantidad: '', total: 0 },
-  // { monto: 0.05, cantidad: '', total: 0 },
 ];

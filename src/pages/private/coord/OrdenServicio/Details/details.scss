@@ -1,5 +1,9 @@
 .content-detail {
-    width: 500px;
+    width: 100%;
+    height: 80vh;
+    min-width: 500px;
+    max-width: 650px;
+    max-height: 600px;
     overflow: auto;
     text-align: center;
     &::-webkit-scrollbar {
@@ -208,6 +212,7 @@
                                 background-color: #fafafa;
                                 cursor: pointer;
                                 border: 1px solid silver;
+                                color: #6d6d6d;
                             }
                         }
                     }
@@ -276,6 +281,67 @@
             // tr:first-child th {
             //     border-top: none;
             // }
+        }
+        .list-pagos {
+            scale: 0.8;
+            position: relative;
+            .title {
+                position: absolute;
+                top: -7px;
+                text-align: center;
+                width: 300px;
+                background: #7b7b7b;
+                color: #fff;
+                margin: 0 25%;
+                border-radius: 20px 20px 0 0px;
+            }
+            ul {
+                background: #87f0c8;
+                padding: 20px;
+                border-radius: 20px;
+                display: grid;
+                gap: 10px;
+                li {
+                    display: grid;
+                    grid-template-columns: 30px 300px 70px 120px 50px;
+                    padding: 10px;
+                }
+                .i-pago {
+                    background: #ffffff85;
+                    border-radius: 10px;
+                    color: #394742;
+                    &:hover {
+                        background: #4b4b4b;
+                        color: #fff;
+                    }
+                    ._fecha {
+                        text-align: left;
+                    }
+                    ._ico {
+                        i {
+                            font-size: 25px;
+                        }
+                    }
+                    &::before {
+                        content: "✓";
+                    }
+                }
+                .i-final {
+                    // .if-estado {
+                    //     text-align: left;
+                    // }
+                    .if-monto {
+                        position: relative;
+                        .l-info {
+                            font-weight: 600;
+                            width: 80px;
+                            position: absolute;
+                            right: 70px;
+                            text-align: left;
+                        }
+                    }
+                }
+            }
         }
     }
 }

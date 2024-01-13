@@ -356,7 +356,25 @@ const PrivateMasterLayout = (props) => {
                 Agregar Gasto
               </button>
             ) : null}
+            <button
+              id="btn-gasto"
+              className="add-gasto"
+              onClick={() => {
+                setMInformeDiario(true);
+              }}
+            >
+              Informe Diario
+            </button>
           </div>
+          {mInformeDiario ? (
+            <Portal
+              onClose={() => {
+                setMInformeDiario(false);
+              }}
+            >
+              <ReporteDiario onClose={setMInformeDiario} />
+            </Portal>
+          ) : null}
           {mGasto ? (
             <Portal
               onClose={() => {

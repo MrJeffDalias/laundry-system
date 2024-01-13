@@ -74,22 +74,18 @@ const Delivery = () => {
       Producto: [
         {
           cantidad: 1,
-          descripcion: '-',
+          descripcion: 'Recojo y Entrega',
           expanded: false,
-          price: '',
+          price: getProductValue('Delivery'),
           producto: 'Delivery',
           stado: true,
-          total: '',
+          total: getProductValue('Delivery'),
           type: 'Delivery',
-          categoria: 'Delivery',
         },
       ],
       celular: '',
       Pago: '',
-      datePago: {
-        fecha: '',
-        hora: '',
-      },
+      ListPago: [],
       datePrevista: {
         fecha: '',
         hora: '',
@@ -98,10 +94,10 @@ const Delivery = () => {
         fecha: '',
         hora: '',
       },
-      metodoPago: '',
       descuento: 0,
       estadoPrenda: 'pendiente',
       estado: 'reservado',
+      //
       dni: '',
       factura: false,
       subTotal: 0,
@@ -127,7 +123,7 @@ const Delivery = () => {
         name: InfoUsuario.name,
         rol: InfoUsuario.rol,
       },
-      lastEdit: [],
+      typeRegistro: 'normal',
     };
 
     dispatch(

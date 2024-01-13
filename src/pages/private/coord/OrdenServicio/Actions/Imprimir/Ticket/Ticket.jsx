@@ -2,7 +2,7 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable react/display-name */
 import React, { useEffect, useState } from 'react';
-import { DiasAttencion, HoraAttencion, calcularFechaFutura, roundDecimal } from '../../../../../../../utils/functions';
+import { DiasAttencion, HoraAttencion, handleGetInfoPago, roundDecimal } from '../../../../../../../utils/functions';
 import './ticket.scss';
 
 import Pet from './pet.jpg';
@@ -21,6 +21,12 @@ const Ticket = React.forwardRef((props, ref) => {
     } else {
       return 0;
     }
+  };
+
+  const calcularFechaFutura = (numeroDeDias) => {
+    const fechaActual = moment();
+    const nuevaFecha = fechaActual.clone().add(numeroDeDias, 'days');
+    return nuevaFecha.format('D [de] MMMM[, del] YYYY');
   };
 
   const handleGetInfoPromo = async (codigoCupon) => {
@@ -43,7 +49,7 @@ const Ticket = React.forwardRef((props, ref) => {
 
     // Formatea la fecha y la hora según los requisitos
     const formattedDate = dateTime.format('D [de] MMMM, YYYY');
-    const formattedTime = dateTime.format('dddd - HH:mm');
+    const formattedTime = dateTime.format('dddd / hh:mm a');
 
     // Construye el objeto de respuesta
     const result = {
@@ -109,7 +115,10 @@ const Ticket = React.forwardRef((props, ref) => {
         <div className="container-ticket" ref={ref}>
           <div className="body-orden-service">
             <div className="receipt_header">
-              <h1>LAVANDERIA Y TINTORERIA {InfoNegocio?.name}</h1>
+              <div className="name-bussiness">
+                <h1>LAVANDERIA Y TINTORERIA</h1>
+                <h1>{InfoNegocio?.name}</h1>
+              </div>
               <table className="info-table">
                 <tbody>
                   <tr>
@@ -122,7 +131,7 @@ const Ticket = React.forwardRef((props, ref) => {
                       {Object.keys(InfoNegocio).length > 0 ? (
                         <>
                           {DiasAttencion(InfoNegocio?.horario.dias)}
-                          <hr />
+                          <hr style={{ visibility: 'hidden' }} />
                           {HoraAttencion(InfoNegocio?.horario.horas)}
                         </>
                       ) : null}
@@ -139,8 +148,7 @@ const Ticket = React.forwardRef((props, ref) => {
             </div>
             <div className="info-client">
               <div className="cod-rec">
-                <h1>ORDEN DE SERVICIO</h1>
-                <h1>- {String(infoOrden.codRecibo).padStart(4, '0')} -</h1>
+                <h1 className="cod-rec">ORDEN DE SERVICIO : {String(infoOrden.codRecibo).padStart(4, '0')}</h1>
               </div>
               <div className="info-detail">
                 <table className="tb-date">
@@ -150,10 +158,10 @@ const Ticket = React.forwardRef((props, ref) => {
                       <td>
                         <div className="date-time">
                           <span>
-                            {handleShowDateTime(infoOrden.dateRecepcion.fecha, infoOrden.dateRecepcion.hora).FInfoD}
+                            {handleShowDateTime(infoOrden.dateRecepcion.fecha, infoOrden.dateRecepcion.hora).SInfoD}
                           </span>
                           <span>
-                            {handleShowDateTime(infoOrden.dateRecepcion.fecha, infoOrden.dateRecepcion.hora).SInfoD}
+                            {handleShowDateTime(infoOrden.dateRecepcion.fecha, infoOrden.dateRecepcion.hora).FInfoD}
                           </span>
                         </div>
                       </td>
@@ -163,10 +171,10 @@ const Ticket = React.forwardRef((props, ref) => {
                       <td>
                         <div className="date-time">
                           <span>
-                            {handleShowDateTime(infoOrden.datePrevista.fecha, infoOrden.datePrevista.hora).FInfoD}
+                            {handleShowDateTime(infoOrden.datePrevista.fecha, infoOrden.datePrevista.hora).SInfoD}
                           </span>
                           <span>
-                            {handleShowDateTime(infoOrden.datePrevista.fecha, infoOrden.datePrevista.hora).SInfoD}
+                            {handleShowDateTime(infoOrden.datePrevista.fecha, infoOrden.datePrevista.hora).FInfoD}
                           </span>
                         </div>
                       </td>
@@ -191,12 +199,17 @@ const Ticket = React.forwardRef((props, ref) => {
               <div className="items">
                 <table>
                   <thead>
-                    <tr>
+                    {/* <tr>
                       <th>ID</th>
                       <th>Item</th>
                       <th>Cant</th>
-                      {/* <th>{""}</th> */}
                       <th>Subt</th>
+                    </tr> */}
+                    <tr>
+                      <th>ID</th>
+                      <th>Item</th>
+                      <th>Cantidad</th>
+                      <th>Subtotal</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -206,7 +219,6 @@ const Ticket = React.forwardRef((props, ref) => {
                           <td>{index + 1}</td>
                           <td>{p.producto}</td>
                           <td>{roundDecimal(p.cantidad)} </td>
-                          {/* <td>{""}</td> */}
                           <td>{roundDecimal(p.total)}</td>
                         </tr>
                         {forW && p.descripcion ? (
@@ -273,10 +285,10 @@ const Ticket = React.forwardRef((props, ref) => {
             </div>
             <div className="monto-final">
               <h2>
-                Total : {simboloMoneda} {roundDecimal(infoOrden.totalNeto)}
+                Pago : {simboloMoneda} {handleGetInfoPago(infoOrden.ListPago, infoOrden.totalNeto).pago}
               </h2>
               <h3 className={`${infoOrden.factura ? null : 'sf'} estado`}>
-                {infoOrden.Pago === 'Pagado' ? 'PAGADO' : 'PENDIENTE'}
+                {handleGetInfoPago(infoOrden.ListPago, infoOrden.totalNeto).estado}
               </h3>
               {infoOrden.factura ? <h2 className="cangeo-factura">Canjear Orden de Servicio por Factura</h2> : null}
             </div>
@@ -290,17 +302,21 @@ const Ticket = React.forwardRef((props, ref) => {
               {listPromos?.map((promo, index) => (
                 <div className="item-promo" key={index}>
                   <div className="info-promo">
-                    <div className="body-ip">
+                    <div>
                       <h1>PROMOCION:</h1>
-                      <h2 className="dsc-i">{promo.descripcion}</h2>
+                      <h2 style={{ fontSize: '0.8em', textAlign: 'justify' }}>{promo.descripcion}</h2>
                       <h2 className="cod-i">codigo: {promo.codigoCupon}</h2>
                     </div>
-                    <img src={Pet} alt="" />
+                    <div className="img-pet">
+                      <img src={Pet} alt="" />
+                    </div>
                   </div>
                   <div className="notice">
-                    <span>CANJEELO EN TU PROXIMA ORDEN</span>
+                    <span>CÁNJELO EN SU PRÓXIMA ORDEN</span>
                   </div>
-                  <h2 className="vigencia">Vencimiento : {calcularFechaFutura(promo.vigencia)}</h2>
+                  <h2 className="vigencia" style={{ float: 'right', fontSize: '0.78em' }}>
+                    Vencimiento : {calcularFechaFutura(promo.vigencia)}
+                  </h2>
                 </div>
               ))}
             </div>

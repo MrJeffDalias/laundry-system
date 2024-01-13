@@ -34,6 +34,11 @@ export function DateDetail(date) {
   return fechaTransformada;
 }
 
+export function DateDetail_Hora(fecha, hora) {
+  const fechaHora = moment(`${fecha} ${hora}`, 'YYYY-MM-DD HH:mm');
+  return fechaHora.format('dddd, D MMMM [de] YYYY - hh:mm a');
+}
+
 export function GetFirstFilter() {
   const currentDate = moment();
   const previousMonth = currentDate.clone().subtract(1, 'month').startOf('month');

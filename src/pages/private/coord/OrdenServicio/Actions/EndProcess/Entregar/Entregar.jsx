@@ -33,7 +33,7 @@ const Entregar = ({ setFieldValue, errors, touched, values }) => {
               value="Taxi"
               onChange={(e) => {
                 setFieldValue('tipoTrasporte', e.target.value);
-                setFieldValue('mDevolucion', 6);
+                // setFieldValue('mDevolucion', 6);
                 setShouldFocusInput(true);
               }}
             />
@@ -103,6 +103,7 @@ const Entregar = ({ setFieldValue, errors, touched, values }) => {
           value={values.mDevolucion}
           ref={inputRef}
           disabled={values.tipoTrasporte === 'Tienda' ? true : false}
+          // parser={(value) => value.replace(/S\/\s?|(,*)/g, '')}
           parser={(value) => value.replace(new RegExp(`${simboloMoneda}\\s?|(,*)`, 'g'), '')}
           formatter={formatValue}
           placeholder="Ingrese Monto"

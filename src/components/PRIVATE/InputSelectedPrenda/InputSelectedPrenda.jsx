@@ -92,7 +92,6 @@ const InputSelectedPrenda = ({ listenClick, tabI, disabled }) => {
         label: 'Tenis',
         value: ['Tenis', getPricePrenda(productosDB, 'Tenis'), false],
       },
-      //////////////////////////
       {
         image: LavadoMano,
         label: 'Lavado a Mano',
@@ -123,7 +122,6 @@ const InputSelectedPrenda = ({ listenClick, tabI, disabled }) => {
         label: 'Peluche',
         value: ['Peluche', getPricePrenda(productosDB, 'Peluche'), false],
       },
-      //////////////////////////
       {
         image: Polo,
         label: 'Playera',
@@ -180,11 +178,6 @@ const InputSelectedPrenda = ({ listenClick, tabI, disabled }) => {
         label: 'Frazada',
         value: ['Frazada', getPricePrenda(productosDB, 'Frazada'), false],
       },
-      // {
-      //   image: Alfombra,
-      //   label: 'Alfombra',
-      //   value: ['Alfombra', getPricePrenda(productosDB, 'Alfombra'), false],
-      // },
       {
         image: Edredon,
         label: 'Edredon',
@@ -205,8 +198,6 @@ const InputSelectedPrenda = ({ listenClick, tabI, disabled }) => {
         label: 'Tapete',
         value: ['Tapete', getPricePrenda(productosDB, 'Tapete'), false],
       },
-      //////////////////////////////////////////////////////////////////////////////////
-      //////////////////////////////////////////////////////////////////////////////////
       {
         image: Planchado,
         label: 'Planchado',
@@ -257,8 +248,6 @@ const InputSelectedPrenda = ({ listenClick, tabI, disabled }) => {
         label: 'Paletas',
         value: ['Paletas', getPricePrenda(productosDB, 'Paletas'), false],
       },
-      //////////////////////////////////////////////////////////////////////////////////
-      //////////////////////////////////////////////////////////////////////////////////
       {
         image: Otro,
         label: 'Otros',

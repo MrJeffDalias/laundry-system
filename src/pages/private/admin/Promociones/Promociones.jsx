@@ -462,8 +462,8 @@ const Promociones = () => {
                   <td>{p.descuento}</td>
                   <td>{p.prenda}</td>
                   <td>{p.cantidadMin}</td>
-                  <td>{p.vigencia}</td>
                   <td>{p.tipoDescuento}</td>
+                  <td>{p.vigencia}</td>
                   <td>
                     <div className="actions">
                       <button

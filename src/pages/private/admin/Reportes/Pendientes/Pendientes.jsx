@@ -7,7 +7,7 @@ import { Modal, ScrollArea, Text } from '@mantine/core';
 import { MantineReactTable } from 'mantine-react-table';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useDisclosure } from '@mantine/hooks';
-import { handleOnWaiting, handleProductoCantidad } from '../../../../../utils/functions';
+import { handleGetInfoPago, handleOnWaiting, handleProductoCantidad } from '../../../../../utils/functions';
 import { Box, MultiSelect } from '@mantine/core';
 import { List, ThemeIcon } from '@mantine/core';
 
@@ -100,11 +100,10 @@ const Pendientes = () => {
       Modalidad: d.Modalidad,
       Producto: handleProductoCantidad(d.Producto),
       DetalleProducto: d.Producto,
-      //cantidad: handleCantidad(d.Producto),
-      totalNeto: `${simboloMoneda} ${d.totalNeto}`,
+      totalNeto: d.totalNeto,
       Celular: d.celular,
       Pago: d.Pago,
-      MetodoPago: d.metodoPago,
+      ListPago: d.ListPago,
       FechaPago: d.datePago,
       FechaIngreso: d.dateRecepcion,
       FechaPrevista: d.datePrevista,
@@ -135,7 +134,6 @@ const Pendientes = () => {
         },
         size: 150,
       },
-
       {
         accessorKey: 'Celular',
         header: 'Celular',
@@ -148,14 +146,18 @@ const Pendientes = () => {
         accessorKey: 'Pago',
         header: 'Pago',
         filterVariant: 'select',
-        mantineFilterSelectProps: { data: ['Pagado', 'Pendiente'] },
-        mantineFilterTextInputProps: { placeholder: 'SI / NO' },
+        mantineFilterSelectProps: { data: ['Completo', 'Incompleto', 'Pendiente'] },
+        mantineFilterTextInputProps: { placeholder: 'C / I / P' },
         editVariant: 'select',
         mantineEditSelectProps: {
           data: [
             {
-              value: 'Pagado',
-              label: 'Pagado',
+              value: 'Completo',
+              label: 'Completo',
+            },
+            {
+              value: 'Incompleto',
+              label: 'Incompleto',
             },
             {
               value: 'Pendiente',
@@ -164,7 +166,7 @@ const Pendientes = () => {
           ],
         },
         enableEditing: false,
-        size: 100,
+        size: 125,
       },
       {
         accessorKey: 'Producto',
@@ -251,10 +253,10 @@ const Pendientes = () => {
         'Orden',
         'Nombre',
         'Modalidad',
+        'Monto Pagado',
         'Pago',
+        'Total Neto',
         'Productos',
-        //'Cantidad',
-        'Monto',
         'Celular',
         'En Espera',
         'Fecha de Ingreso',
@@ -266,22 +268,23 @@ const Pendientes = () => {
     infoPendientes.forEach((item) => {
       //const quantitiesText = item.cantidad.join('\n');
       const productsText = Array.from(item.Producto).join('\n');
+      const estadoPago = handleGetInfoPago(item.ListPago, item.totalNeto);
 
       worksheet.addRow([
         item.Recibo,
         item.Nombre,
         item.Modalidad,
-        item.Pago,
-        productsText,
-        //quantitiesText,
+        estadoPago.pago > 0 ? `${simboloMoneda} ${estadoPago.pago}` : '-',
+        estadoPago.estado,
         item.totalNeto,
-        item.Celular,
+        productsText,
+        item.Celular ? item.Celular : '-',
         item.onWaiting.showText,
         item.FechaIngreso.fecha,
       ]);
     });
 
-    const productsColumn = worksheet.getColumn(5);
+    const productsColumn = worksheet.getColumn(7);
 
     worksheet.eachRow((row) => {
       row.alignment = { wrapText: true, horizontal: 'center', vertical: 'middle' };
@@ -301,7 +304,7 @@ const Pendientes = () => {
 
     const maxLineLengths = [];
     await worksheet.eachRow({ includeEmpty: true }, (row) => {
-      const cell = row.getCell(5); // Obtener la celda de la columna "Products"
+      const cell = row.getCell(7); // Obtener la celda de la columna "Products"
       const lines = cell.text.split('\n');
       let maxLength = 0;
       lines.forEach((line) => {

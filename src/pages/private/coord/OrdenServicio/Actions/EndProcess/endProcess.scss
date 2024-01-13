@@ -1,7 +1,32 @@
+.mantine-Modal-content {
+    overflow: visible !important;
+}
+
+.modal-dateEntrega {
+    height: max-content;
+    display: grid;
+    gap: 20px;
+    text-align: center;
+}
+.content-date-entrega {
+    display: grid;
+    grid-template-columns: 170px 65px;
+    gap: 20px;
+    place-content: center;
+    margin: auto;
+    border: 1px solid silver;
+    padding: 20px;
+    width: min-content;
+    margin-top: 10px;
+}
+
 .actions-container {
     padding: 5px;
     .header-ac {
         text-align: center;
+        h1 {
+            font-size: 20px;
+        }
     }
     .body-ac {
         .actions-init {
@@ -29,6 +54,66 @@
                 padding: 10px;
                 display: grid;
                 gap: 20px;
+                .data-pay {
+                    place-items: center;
+                    margin: auto;
+                    .item-ipay {
+                        width: max-content;
+                        overflow: hidden;
+                        display: grid;
+                        place-items: center;
+                        grid-template-columns: 100px max-content;
+                        border-radius: 20px;
+                        .title {
+                            padding: 3px;
+                            color: #fff;
+                        }
+                        .monto {
+                            padding: 3px 20px;
+                            width: 100%;
+                            height: 100%;
+                            text-align: center;
+                            background: #fff;
+                            border-radius: 20px;
+                        }
+                    }
+                    .total {
+                        background: #5092f5;
+                        .monto {
+                            border: solid 1px #5092f5;
+                        }
+                    }
+                    .adelanto {
+                        background: #f5a850;
+                        .monto {
+                            border: solid 1px #f5a850;
+                        }
+                    }
+                    .falta {
+                        background: #f55050;
+                        .monto {
+                            border: solid 1px #f55050;
+                        }
+                    }
+                }
+                .content-pay {
+                    display: grid;
+                    gap: 20px;
+
+                    .info-pay {
+                        display: grid;
+                        margin: auto;
+                        width: 90%;
+                        gap: 20px;
+                        .input-monto {
+                            position: relative;
+                            width: 230px;
+                            .montoToPay {
+                                width: 200px;
+                            }
+                        }
+                    }
+                }
                 .checkbox-group {
                     width: max-content;
                     display: flex;
@@ -96,7 +181,9 @@
                                 flex-direction: column;
                                 align-items: center;
                                 justify-content: center;
-                                width: 6rem;
+                                width: max-content;
+                                padding: 15px;
+                                min-width: 6rem;
                                 min-height: 6rem;
                                 border-radius: 0.5rem;
                                 border: 2px solid #b5bfd9;
@@ -180,10 +267,9 @@
     }
     /////////////////////////////////////////////////
     .ico-req {
-        margin: 0 !important;
         position: absolute;
         bottom: 0;
-        right: 10px;
+        right: 0;
         color: #ffaf00;
         font-size: 24px;
         &:hover .info-req {
@@ -195,8 +281,8 @@
                 display: none;
                 width: max-content;
                 position: absolute;
-                top: -27px;
-                right: 0;
+                top: -24px;
+                left: 0;
                 background: #fff;
                 z-index: 1;
                 border-radius: 5px;

@@ -14,6 +14,7 @@ import moment from 'moment';
 import {
   DateCurrent,
   GetFirstFilter,
+  handleGetInfoPago,
   handleOnWaiting,
   handleProductoCantidad,
 } from '../../../../../utils/functions/index';
@@ -28,7 +29,7 @@ import EndProcess from '../Actions/EndProcess/EndProcess';
 import Details from '../Details/Details';
 import BarProgress from '../../../../../components/PRIVATE/BarProgress/BarProgress';
 import { Roles } from '../../../../../models';
-import { confMoneda, simboloMoneda, tipoMoneda } from '../../../../../services/global';
+import { confMoneda, documento, simboloMoneda, tipoMoneda } from '../../../../../services/global';
 
 const List = () => {
   //Filtros de Fecha
@@ -57,7 +58,7 @@ const List = () => {
     () => [
       {
         accessorKey: 'Recibo',
-        header: 'Recibo',
+        header: 'Orden',
         mantineFilterTextInputProps: {
           placeholder: 'N°',
         },
@@ -98,7 +99,7 @@ const List = () => {
       },
       {
         accessorKey: 'FechaRecepcion',
-        header: 'Ingreso',
+        header: 'Recepcion',
         mantineFilterTextInputProps: {
           placeholder: 'Fecha',
         },
@@ -110,8 +111,6 @@ const List = () => {
         mantineFilterTextInputProps: {
           placeholder: 'Producto',
         },
-        //enableSorting: false,
-        //enableEditing: false,
         Cell: ({ cell }) => (
           <MultiSelect
             data={cell.getValue()}
@@ -124,8 +123,43 @@ const List = () => {
         size: 190,
       },
       {
+        accessorKey: 'PParcial',
+        header: 'Monto Pagado',
+        //enableSorting: false,
+        mantineFilterTextInputProps: {
+          placeholder: 'Monto',
+        },
+        size: 120,
+      },
+      {
+        accessorKey: 'Pago',
+        header: 'Pago',
+        filterVariant: 'select',
+        mantineFilterSelectProps: { data: ['Completo', 'Incompleto', 'Pendiente'] },
+        mantineFilterTextInputProps: { placeholder: 'C / I / P' },
+        editVariant: 'select',
+        mantineEditSelectProps: {
+          data: [
+            {
+              value: 'Completo',
+              label: 'Completo',
+            },
+            {
+              value: 'Incompleto',
+              label: 'Incompleto',
+            },
+            {
+              value: 'Pendiente',
+              label: 'Pendiente',
+            },
+          ],
+        },
+        enableEditing: false,
+        size: 100,
+      },
+      {
         accessorKey: 'totalNeto',
-        header: 'Monto',
+        header: 'Total',
         //enableSorting: false,
         Cell: ({ cell }) => (
           <Box>
@@ -139,7 +173,7 @@ const List = () => {
         ),
         enableEditing: false,
         mantineFilterTextInputProps: {
-          placeholder: 'Monto',
+          placeholder: 'Total',
         },
         size: 70,
       },
@@ -151,17 +185,6 @@ const List = () => {
           placeholder: 'Numero',
         },
         size: 80,
-      },
-      {
-        accessorKey: 'Pago',
-        header: 'Pago',
-        //enableSorting: false,
-        filterVariant: 'select',
-        mantineFilterSelectProps: { data: ['Pendiente', 'Pagado'] },
-        mantineFilterTextInputProps: {
-          placeholder: 'SI / NO',
-        },
-        size: 130,
       },
       {
         accessorKey: 'Location',
@@ -220,21 +243,12 @@ const List = () => {
       },
       {
         accessorKey: 'DNI',
-        header: 'Documento',
+        header: documento,
         //enableSorting: false,
         mantineFilterTextInputProps: {
-          placeholder: 'N* Documento',
+          placeholder: documento,
         },
-        size: 120,
-      },
-      {
-        accessorKey: 'FechaPago',
-        header: 'Fecha Pago',
-        //enableSorting: false,
-        mantineFilterTextInputProps: {
-          placeholder: 'Fecha',
-        },
-        size: 120,
+        size: 80,
       },
       {
         accessorKey: 'onWaiting',
@@ -275,22 +289,22 @@ const List = () => {
       reOrdenar.map(async (d) => {
         const dateEndProcess = d.estadoPrenda === 'donado' ? d.donationDate.fecha : d.dateEntrega.fecha;
         const onWaiting = await handleOnWaiting(d.dateRecepcion.fecha, d.estadoPrenda, dateEndProcess);
+        const estadoPago = handleGetInfoPago(d.ListPago, d.totalNeto);
 
         const structureData = {
           Id: d._id,
-          Recibo: String(d.codRecibo).padStart(4, '0'),
+          Recibo: String(d.codRecibo).padStart(6, '0'),
           Nombre: d.Nombre,
           Modalidad: d.Modalidad,
           Producto: handleProductoCantidad(d.Producto),
+          PParcial: `${simboloMoneda} ${estadoPago.pago}`,
+          Pago: d.Pago,
           totalNeto: `${simboloMoneda} ${d.totalNeto}`,
-          MetodoPago: d.metodoPago,
           DNI: d.dni,
           Celular: d.celular,
           FechaEntrega: d.dateEntrega.fecha,
-          FechaPago: d.datePago.fecha,
           FechaRecepcion: d.dateRecepcion.fecha,
           Descuento: d.descuento,
-          Pago: d.Pago,
           Location: d.location,
           EstadoPrenda: d.estadoPrenda,
           Estado: d.estado,
@@ -313,8 +327,8 @@ const List = () => {
         })
       );
     } else {
-      const startDate = moment(secondFilter).startOf('month').format('YYYY-MM-DD');
-      const endDate = moment(secondFilter).endOf('month').format('YYYY-MM-DD');
+      const startDate = moment.utc(secondFilter).startOf('month').format('YYYY-MM-DD');
+      const endDate = moment.utc(secondFilter).endOf('month').format('YYYY-MM-DD');
       dispatch(
         GetOrdenServices_DateRange({
           dateInicio: startDate,
@@ -338,8 +352,8 @@ const List = () => {
 
   const handleMonthPickerChange = useCallback(
     (date) => {
-      const startDate = moment(date).startOf('month').format('YYYY-MM-DD');
-      const endDate = moment(date).endOf('month').format('YYYY-MM-DD');
+      const startDate = moment.utc(date).startOf('month').format('YYYY-MM-DD');
+      const endDate = moment.utc(date).endOf('month').format('YYYY-MM-DD');
       setSecondFilter(date);
       dispatch(
         GetOrdenServices_DateRange({

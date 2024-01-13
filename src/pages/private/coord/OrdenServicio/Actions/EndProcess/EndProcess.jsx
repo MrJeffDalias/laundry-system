@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { AnularOrderService } from '../../../../../../redux/actions/aAnular';
 import { CancelEntrega_OrdenService, UpdateOrdenServices } from '../../../../../../redux/actions/aOrdenServices';
-import { DateCurrent } from '../../../../../../utils/functions';
+import { DateCurrent, handleGetInfoPago } from '../../../../../../utils/functions';
 
 import { Text } from '@mantine/core';
 import { modals } from '@mantine/modals';
@@ -37,6 +37,7 @@ const EndProcess = ({ IdCliente, onClose }) => {
 
   //const PENDIENTE = "pendiente";
   const PAGADO = 'Pagado';
+  const estadoPago = handleGetInfoPago(infoCliente.ListPago, infoCliente.totalNeto);
 
   const handleCancelarEntrega = () => {
     dispatch(CancelEntrega_OrdenService(IdCliente)).then((res) => {
@@ -61,18 +62,19 @@ const EndProcess = ({ IdCliente, onClose }) => {
     });
   };
 
-  const openModalPagarEntregar = (values) =>
+  const openModalPagar = (values) => {
     modals.openConfirmModal({
-      title: 'Confirmar Pago y Entrega',
+      title: 'Confirmar Pago',
       centered: true,
-      children: <Text size="sm">¿ Estas seguro que quieres realizar el PAGO y la ENTREGA ?</Text>,
+      children: <Text size="sm">¿ Estas seguro que quieres realizar el PAGO ?</Text>,
       labels: { confirm: 'Si', cancel: 'No' },
       confirmProps: { color: 'green' },
       //onCancel: () => console.log("Cancelado"),
-      onConfirm: () => handleGetInfo(values),
+      onConfirm: () => handleEditPago(values),
     });
+  };
 
-  const openModalEntregar = () =>
+  const openModalEntregar = (value) => {
     modals.openConfirmModal({
       title: 'Confirmar Entrega',
       centered: true,
@@ -80,43 +82,63 @@ const EndProcess = ({ IdCliente, onClose }) => {
       labels: { confirm: 'Si', cancel: 'No' },
       confirmProps: { color: 'green' },
       //onCancel: () => console.log("Cancelado"),
-      onConfirm: () => handleEditEntrega(''),
+      onConfirm: () => handleEditEntrega(value),
     });
+  };
+
+  // Pago
+  const handleEditPago = async (values) => {
+    const newPago = {
+      ...values,
+      date: {
+        fecha: DateCurrent().format4,
+        hora: DateCurrent().format3,
+      },
+    };
+
+    const newEstadoPago = await handleGetInfoPago([...infoCliente.ListPago, newPago], infoCliente.totalNeto);
+    await dispatch(
+      UpdateOrdenServices({
+        id: IdCliente,
+        infoRecibo: {
+          ...infoCliente,
+          ListPago: [...infoCliente.ListPago, newPago],
+          Pago: newEstadoPago.estado,
+        },
+        rol: InfoUsuario.rol,
+      })
+    ).then((res) => {
+      if (res.payload) {
+        onClose();
+      }
+    });
+  };
 
   // Entregado
   const handleEditEntrega = (iDelivery) => {
-    const infoDelivery = {
-      name: infoCliente.Nombre,
-      descripcion: `[${String(infoCliente.codRecibo).padStart(4, '0')}] Delivery Devolucion en ${
-        iDelivery.tipoTrasporte
-      }`,
-      fecha: DateCurrent().format4,
-      hora: DateCurrent().format3,
-      monto: iDelivery.mDevolucion,
-    };
+    let infoDelivery;
+    if (infoCliente.Modalidad === 'Delivery') {
+      infoDelivery = {
+        name: infoCliente.Nombre,
+        descripcion: `[${String(infoCliente.codRecibo).padStart(4, '0')}] Delivery Devolucion en ${
+          iDelivery.tipoTrasporte
+        }`,
+        fecha: DateCurrent().format4,
+        hora: DateCurrent().format3,
+        monto: iDelivery.mDevolucion,
+      };
+    }
 
     dispatch(
       UpdateOrdenServices({
         id: IdCliente,
         infoRecibo: {
           ...infoCliente,
-          datePago: infoCliente.datePago.fecha
-            ? infoCliente.datePago
-            : {
-                fecha: DateCurrent().format4,
-                hora: DateCurrent().format3,
-              },
           dateEntrega: {
             fecha: DateCurrent().format4,
             hora: DateCurrent().format3,
           },
-          Pago: iDelivery ? 'Pagado' : infoCliente.Pago,
           estadoPrenda: 'entregado',
-          metodoPago: iDelivery
-            ? iDelivery.metodoPago !== ''
-              ? iDelivery.metodoPago
-              : infoCliente.metodoPago
-            : infoCliente.metodoPago,
           location: 1,
         },
         ...(iDelivery && { infoDelivery }),
@@ -129,28 +151,35 @@ const EndProcess = ({ IdCliente, onClose }) => {
     });
   };
 
-  const handleButtonClick = () => {
-    if (infoCliente.Pago === PAGADO) {
-      if (infoCliente.Modalidad === 'Tienda') {
-        openModalEntregar();
-      } else {
-        setOnAction('concluir');
-      }
+  const handleEntregar = () => {
+    if (infoCliente.Modalidad === 'Tienda') {
+      openModalEntregar();
     } else {
       setOnAction('concluir');
     }
   };
-
   const validationSchema = Yup.object().shape({
-    tipoTrasporte: infoCliente.Modalidad === 'Delivery' ? Yup.string().required('Escoja un tipo de transporte') : null,
-    metodoPago: infoCliente.Pago === 'Pendiente' ? Yup.string().required('Escoja Metodo de Pago') : null,
-    mDevolucion: infoCliente.Modalidad === 'Delivery' ? Yup.string().required('Escoja Metodo de Pago') : null,
+    tipoTrasporte:
+      infoCliente.Modalidad === 'Delivery' && infoCliente.Pago === 'Completo'
+        ? Yup.string().required('Escoja un tipo de transporte')
+        : null,
+    metodoPago: infoCliente.Pago !== 'Completo' ? Yup.string().required('Escoja Metodo de Pago') : null,
+    mDevolucion:
+      infoCliente.Modalidad === 'Delivery' && infoCliente.Pago === 'Completo'
+        ? Yup.string().required('Escoja Metodo de Pago')
+        : null,
+    total: infoCliente.Pago !== 'Completo' ? Yup.string().required('Ingrese Monto a Pagar') : null,
   });
 
-  const handleGetInfo = (info) => {
-    infoCliente.Modalidad === 'Delivery' ? handleEditEntrega(info) : handleEditEntrega({ metodoPago: info.metodoPago });
+  const vInitialPago = {
+    total: '',
+    metodoPago: '',
   };
 
+  const vInitialEntrega = {
+    tipoTrasporte: '',
+    mDevolucion: '',
+  };
   useEffect(() => {
     setBtnText(infoCliente.Pago === PAGADO ? 'Entregar' : 'Pagar y Entregar');
   }, [infoCliente]);
@@ -193,26 +222,37 @@ const EndProcess = ({ IdCliente, onClose }) => {
     <div className="actions-container">
       <div className="header-ac">
         <h1>
-          {infoCliente.Nombre.split(' ').slice(0, 1).join(' ')} - {infoCliente.Modalidad}
+          {infoCliente.Nombre.split(' ').slice(0, 1).join(' ')} - {infoCliente.Modalidad}(N°{infoCliente.codRecibo})
         </h1>
       </div>
       <hr />
       <div className="body-ac">
         {onAction === 'principal' ? ( // Principal
           <div className="actions-init">
-            {infoCliente.estadoPrenda === 'pendiente' ? (
+            {/* {infoCliente.estadoPrenda === 'pendiente' ? (
               <button type="button" className="btn-exm" onClick={handleButtonClick}>
                 {btnText}
+              </button>
+            ) : null} */}
+            {infoCliente.estadoPrenda === 'pendiente' && infoCliente.Pago === 'Completo' ? (
+              <button type="button" className="btn-exm" onClick={handleEntregar}>
+                Entregar
+              </button>
+            ) : null}
+            {infoCliente.estadoPrenda === 'pendiente' && infoCliente.Pago !== 'Completo' ? (
+              <button
+                type="button"
+                className="btn-exm"
+                onClick={() => {
+                  setOnAction('concluir');
+                }}
+              >
+                Pagar
               </button>
             ) : null}
             {infoCliente.dateRecepcion.fecha === DateCurrent().format4 || infoCliente.estadoPrenda !== 'entregado' ? (
               <button type="button" className="btn-exm" onClick={() => setOnAction('anular')}>
                 Anular
-              </button>
-            ) : null}
-            {infoCliente.dateEntrega.fecha === DateCurrent().format4 && infoCliente.estadoPrenda === 'entregado' ? (
-              <button type="button" className="btn-exm" onClick={handleCancelarEntrega}>
-                Cancelar Entrega
               </button>
             ) : null}
             {infoCliente.estadoPrenda !== 'entregado' && infoCliente.modeRegistro !== 'antiguo' ? (
@@ -226,26 +266,83 @@ const EndProcess = ({ IdCliente, onClose }) => {
                 Editar
               </button>
             ) : null}
+            {infoCliente.dateEntrega.fecha === DateCurrent().format4 && infoCliente.estadoPrenda === 'entregado' ? (
+              <button type="button" className="btn-exm" onClick={handleCancelarEntrega}>
+                Cancelar Entrega
+              </button>
+            ) : null}
           </div>
         ) : onAction === 'concluir' ? (
           <Formik
-            initialValues={{}}
+            initialValues={infoCliente.Pago !== 'Completo' ? vInitialPago : vInitialEntrega}
             validationSchema={validationSchema}
             onSubmit={(values, { setSubmitting }) => {
-              openModalPagarEntregar(values);
+              if (infoCliente.Pago !== 'Completo') {
+                openModalPagar(values);
+              } else {
+                openModalEntregar(values);
+              }
+              // openModalPagarEntregar(values);
               setSubmitting(false);
             }}
           >
             {({ handleSubmit, setFieldValue, isSubmitting, values, errors, touched }) => (
               <Form onSubmit={handleSubmit} className="content-pE">
-                <h1>
-                  {simboloMoneda} {infoCliente.totalNeto}
-                </h1>
                 <div className="trasporte-pago">
-                  {infoCliente.Pago === 'Pendiente' ? (
-                    <Pagar setFieldValue={setFieldValue} errors={errors} touched={touched} />
+                  {infoCliente.Pago !== 'Completo' ? (
+                    <>
+                      <div
+                        className="data-pay"
+                        style={
+                          infoCliente.Pago !== 'Pendiente'
+                            ? { display: 'grid', gap: '15px' }
+                            : { display: 'flex', gap: '20px' }
+                        }
+                      >
+                        <div style={{ display: 'flex', gap: '20px' }}>
+                          <div className="item-ipay total">
+                            <div className="title">
+                              <span>Total</span>
+                            </div>
+                            <div className="monto">
+                              <span>
+                                {simboloMoneda} {infoCliente.totalNeto}
+                              </span>
+                            </div>
+                          </div>
+                          {infoCliente.Pago !== 'Completo' && infoCliente.ListPago.length > 0 ? (
+                            <div className="item-ipay adelanto">
+                              <div className="title">
+                                <span>Adelanto</span>
+                              </div>
+                              <div className="monto">
+                                <span>
+                                  {simboloMoneda} {estadoPago.pago}
+                                </span>
+                              </div>
+                            </div>
+                          ) : null}
+                        </div>
+                        <div className="item-ipay falta">
+                          <div className="title">
+                            <span>Falta</span>
+                          </div>
+                          <div className="monto">
+                            <span>
+                              {simboloMoneda} {estadoPago.falta}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <Pagar
+                        setFieldValue={setFieldValue}
+                        errors={errors}
+                        touched={touched}
+                        totalToPay={estadoPago.falta}
+                      />
+                    </>
                   ) : null}
-                  {infoCliente.Modalidad === 'Delivery' ? (
+                  {infoCliente.Modalidad === 'Delivery' && infoCliente.Pago === 'Completo' ? (
                     <Entregar setFieldValue={setFieldValue} errors={errors} touched={touched} values={values} />
                   ) : null}
                 </div>

@@ -1,10 +1,11 @@
 .table-container {
     table {
+        zoom: 0.8;
         margin: 10px auto;
         tr {
             position: relative;
             display: grid;
-            grid-template-columns: 161px 100px 120px 110px 110px 110px 100px 80px 100px;
+            grid-template-columns: 161px 100px 120px 110px 130px 100px 100px 80px 100px 100px 100px;
         }
         thead {
             tr {

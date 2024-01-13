@@ -37,13 +37,14 @@ import { useDisclosure } from '@mantine/hooks';
 import { useDispatch, useSelector } from 'react-redux';
 import { PrivateRoutes } from '../../../models';
 import axios from 'axios';
-import { DateCurrent, DiasAttencion, HoraAttencion } from '../../../utils/functions';
+import { DateCurrent, DiasAttencion, HoraAttencion, handleGetInfoPago } from '../../../utils/functions';
 import SwitchModel from '../../SwitchModel/SwitchModel';
 import Promocion from './Promocion/Promocion';
 import { setLastRegister } from '../../../redux/states/service_order';
 import { socket } from '../../../utils/socket/connect';
 import { Notify } from '../../../utils/notify/Notify';
 import { documento, ingresoDigital, nameImpuesto, simboloMoneda } from '../../../services/global';
+import ButtonSwitch from '../MetodoPago/ButtonSwitch/ButtonSwitch';
 
 const OrdenServicio = ({ mode, action, onAction, iEdit, onReturn, iDelivery }) => {
   const iCodigo = useSelector((state) => state.codigo.infoCodigo.codActual);
@@ -68,6 +69,8 @@ const OrdenServicio = ({ mode, action, onAction, iEdit, onReturn, iDelivery }) =
   const [infoClientes, setInfoClientes] = useState([]);
   // Puntos del cliente Actual
   const [dataScore, setDataScore] = useState(false);
+
+  const [iPago, setIPago] = useState();
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -107,12 +110,8 @@ const OrdenServicio = ({ mode, action, onAction, iEdit, onReturn, iDelivery }) =
         : new Date(),
       datePrevista: iEdit?.datePrevista?.fecha ? moment(iEdit.datePrevista.fecha, 'YYYY-MM-DD').toDate() : new Date(),
       dayhour: iEdit?.datePrevista?.hora || '17:00',
-      datePago: iEdit
-        ? iEdit.datePago
-        : {
-            fecha: '',
-            hora: '',
-          }, // Cambio agregue datePago
+      listPago: iEdit ? iEdit.ListPago : [],
+      pago: iEdit ? iEdit.Pago : 'Pendiente',
       productos: iEdit
         ? iEdit.Producto
         : mode === 'Delivery'
@@ -126,14 +125,11 @@ const OrdenServicio = ({ mode, action, onAction, iEdit, onReturn, iDelivery }) =
               stado: true,
               total: getPricePrenda('Delivery'),
               type: 'Delivery',
-              // categoria: 'Delivery',
             },
           ]
         : [],
       descuento: iEdit ? iEdit.descuento : 0,
       modoDescuento: iEdit ? iEdit.modoDescuento : 'Puntos',
-      swPagado: iEdit ? (iEdit.Pago === 'Pagado' ? true : false) : false,
-      metodoPago: iEdit ? iEdit.metodoPago : '',
       factura: iEdit ? iEdit.factura : false,
       subTotal: iEdit ? iEdit.subTotal : 0,
       cargosExtras: iEdit
@@ -179,9 +175,9 @@ const OrdenServicio = ({ mode, action, onAction, iEdit, onReturn, iDelivery }) =
     const values = { ...formik.values, gift_promo: cups.length > 0 ? cups : [] };
 
     modals.openConfirmModal({
-      title: 'Registro de Factura',
+      title: 'Registro de Orden de Servicio',
       centered: true,
-      children: <Text size="sm">¿Estás seguro de registrar esta factura?</Text>,
+      children: <Text size="sm">¿Estás seguro de registrar esta Orden de Servicio?</Text>,
       labels: { confirm: 'Si', cancel: 'No' },
       confirmProps: { color: 'green' },
       onCancel: () => formik.setFieldValue('gift_promo', []),
@@ -189,7 +185,7 @@ const OrdenServicio = ({ mode, action, onAction, iEdit, onReturn, iDelivery }) =
     });
   };
 
-  const addRowGarment = (producto, precio, stateCantidad /*, categoria*/) => {
+  const addRowGarment = (producto, precio, stateCantidad) => {
     const tipo = producto === 'Otros' ? 'Otros' : 'Prenda';
     const newRow = {
       stado: stateCantidad,
@@ -200,7 +196,6 @@ const OrdenServicio = ({ mode, action, onAction, iEdit, onReturn, iDelivery }) =
       descripcion: '',
       expanded: false,
       total: precio,
-      //categoria: categoria,
     };
     return newRow;
   };
@@ -214,6 +209,50 @@ const OrdenServicio = ({ mode, action, onAction, iEdit, onReturn, iDelivery }) =
     const horaFormateada = moment(fecha).format('HH:mm');
     return horaFormateada;
   }
+
+  const handlePago = (value) => {
+    setIPago(value);
+    let newListPago = [];
+    let newStatePago;
+    if (value) {
+      const iPago = {
+        date: {
+          fecha: moment().format('YYYY-MM-DD'),
+          hora: moment().format('HH:mm'),
+        },
+        ...value,
+      };
+
+      if (iEdit && iEdit.modeEditAll === false) {
+        const updatedListPago = formik.values.listPago.map((pago) => (pago._id === iPago._id ? iPago : pago));
+        newListPago = updatedListPago;
+        newStatePago = handleGetInfoPago(newListPago, formik.values.totalNeto);
+        formik.setFieldValue('listPago', updatedListPago);
+      } else {
+        newListPago.push(iPago);
+        newStatePago = handleGetInfoPago(newListPago, formik.values.totalNeto);
+        formik.setFieldValue('listPago', iPago);
+      }
+      formik.setFieldValue('pago', newStatePago.estado);
+    } else {
+      newListPago = [value];
+      const newStatePago = handleGetInfoPago(newListPago, formik.values.totalNeto);
+      formik.setFieldValue('pago', newStatePago.estado);
+      iEdit ? formik.values.listPago.filter((pago) => pago._id === value._id) : null;
+    }
+  };
+
+  const handleNoPagar = (id) => {
+    let newListPago = [];
+    if (iEdit && iEdit.modeEditAll === false) {
+      const updatedListPago = formik.values.listPago.filter((pago) => pago._id !== id);
+      newListPago = updatedListPago;
+      formik.setFieldValue('listPago', updatedListPago);
+    }
+    const newStatePago = handleGetInfoPago(newListPago, formik.values.totalNeto);
+    formik.setFieldValue('pago', newStatePago.estado);
+    setIPago();
+  };
 
   const handleGetInfo = async (info) => {
     const infoProduct = info.productos.map((p) => ({
@@ -242,8 +281,8 @@ const OrdenServicio = ({ mode, action, onAction, iEdit, onReturn, iDelivery }) =
       Nombre: info.name,
       Producto: infoProduct,
       celular: info.phone,
-      Pago: info.swPagado ? 'Pagado' : 'Pendiente',
-      datePago: info.datePago, // Cambio hice q lo tome del estado
+      Pago: info.pago,
+      ListPago: info.listPago,
       datePrevista: {
         fecha: tFecha(info.datePrevista),
         hora: info.dayhour,
@@ -252,7 +291,6 @@ const OrdenServicio = ({ mode, action, onAction, iEdit, onReturn, iDelivery }) =
         fecha: '',
         hora: '',
       },
-      metodoPago: info.metodoPago,
       descuento: info.descuento,
       estadoPrenda: iEdit ? iEdit.estadoPrenda : 'pendiente',
       estado: 'registrado',
@@ -287,6 +325,8 @@ const OrdenServicio = ({ mode, action, onAction, iEdit, onReturn, iDelivery }) =
       infoRecibo,
       rol: InfoUsuario.rol,
     });
+
+    formik.handleReset();
   };
 
   const handleTextareaHeight = (textarea) => {
@@ -604,6 +644,10 @@ const OrdenServicio = ({ mode, action, onAction, iEdit, onReturn, iDelivery }) =
     };
   }, []);
 
+  useEffect(() => {
+    handleNoPagar();
+  }, [formik.values.totalNeto]);
+
   return (
     <div className="content-recibo">
       <form onSubmit={formik.handleSubmit} className="container">
@@ -847,10 +891,10 @@ const OrdenServicio = ({ mode, action, onAction, iEdit, onReturn, iDelivery }) =
                 />
               </div>
               <InputSelectedPrendas
-                listenClick={(producto, precio, estado /*, categoria*/) =>
+                listenClick={(producto, precio, estado) =>
                   formik.setFieldValue('productos', [
                     ...formik.values.productos,
-                    addRowGarment(producto, precio, estado /*, categoria*/),
+                    addRowGarment(producto, precio, estado),
                   ])
                 }
                 disabled={iEdit ? (iEdit.modeEditAll ? false : true) : false}
@@ -934,11 +978,9 @@ const OrdenServicio = ({ mode, action, onAction, iEdit, onReturn, iDelivery }) =
                         disabled={
                           iEdit?.estado === 'registrado'
                             ? true
-                            : row.type === 'otros'
+                            : row.type === 'Otros'
                             ? false
-                            : row.type === ''
-                            ? true
-                            : row.type === 'productos'
+                            : row.type === 'Prenda'
                             ? !row.estado
                             : true
                         }
@@ -1135,96 +1177,115 @@ const OrdenServicio = ({ mode, action, onAction, iEdit, onReturn, iDelivery }) =
             )}
           </div>
           <div className="footer">
-            <div className="f-Pay">
-              <div className="input-switch">
-                <label className="qData">Pagado:</label>
-                <Tag
-                  Etiqueta="div"
-                  className="switch-container"
-                  onClick={() => {
-                    if (
-                      !iEdit ||
-                      iEdit?.dateRecepcion.fecha === DateCurrent().format4 ||
-                      iEdit?.estado === 'reservado'
-                    ) {
-                      if (!formik.values.swPagado === false) {
-                        formik.setFieldValue('metodoPago', '');
-                        formik.setFieldValue('datePago', {
-                          fecha: '',
-                          hora: '',
-                        }); // Cambio - solo si cambia de estado el swtich cambiara el datepago
-                        setIsPortalPago(false);
-                      } else {
-                        formik.setFieldValue('datePago', {
-                          fecha: moment().format('YYYY-MM-DD'),
-                          hora: moment().format('HH:mm'),
-                        }); // Cambio - solo si cambia de estado el swtich cambiara el datepago
-                        setIsPortalPago(!isPortalPago);
+            {!iEdit || iEdit.modeEditAll ? (
+              <div className="f-Pay">
+                <div className="content-sb">
+                  <div className="input-pay ">
+                    <label htmlFor="">Pago :</label>
+                    <button className="btn-switch" type="button" onClick={() => setIsPortalPago(!isPortalPago)}>
+                      <ButtonSwitch pago={formik.values.pago} />
+                    </button>
+                  </div>
+                  {iPago ? (
+                    <img
+                      tabIndex="-1"
+                      className={
+                        iPago.metodoPago === 'Efectivo'
+                          ? 'ico-efect'
+                          : iPago.metodoPago === ingresoDigital
+                          ? 'ico-tranf'
+                          : 'ico-card'
                       }
-                      formik.setFieldValue('swPagado', !formik.values.swPagado);
-                    }
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    id="swPagado"
-                    checked={formik.values.swPagado}
-                    name="swPagado"
-                    disabled={!iEdit || iEdit?.dateRecepcion.fecha === DateCurrent().format4 ? false : true}
-                    onChange={() => {
-                      if (!formik.values.swPagado === false) {
-                        formik.setFieldValue('metodoPago', '');
-                        formik.setFieldValue('datePago', {
-                          fecha: '',
-                          hora: '',
-                        }); // Cambio - solo si cambia de estado el swtich cambiara el datepago
-                        setIsPortalPago(false);
-                      } else {
-                        formik.setFieldValue('datePago', {
-                          fecha: moment().format('YYYY-MM-DD'),
-                          hora: moment().format('HH:mm'),
-                        }); // Cambio - solo si cambia de estado el swtich cambiara el datepago
-                        setIsPortalPago(!isPortalPago);
+                      src={
+                        iPago.metodoPago === 'Efectivo'
+                          ? Efectivo
+                          : iPago?.metodoPago === ingresoDigital
+                          ? Tranferencia
+                          : Tarjeta
                       }
-
-                      formik.setFieldValue('swPagado', !formik.values.swPagado);
-                    }}
-                  />
-                  <label htmlFor="swPagado" onClick={(e) => e.stopPropagation()} />
-                </Tag>
+                      alt=""
+                    />
+                  ) : null}
+                </div>
+                {iPago ? (
+                  <div className="info-pago">{`${iPago.metodoPago} ${simboloMoneda}${iPago.total} : ${formik.values.pago}`}</div>
+                ) : null}
               </div>
-              {formik.values.metodoPago !== '' ? (
-                <img
-                  tabIndex="-1"
-                  className={
-                    formik.values.metodoPago === 'Efectivo'
-                      ? 'ico-efect'
-                      : formik.values.metodoPago === ingresoDigital
-                      ? 'ico-tranf'
-                      : 'ico-card'
-                  }
-                  src={
-                    formik.values.metodoPago === 'Efectivo'
-                      ? Efectivo
-                      : formik.values.metodoPago === ingresoDigital
-                      ? Tranferencia
-                      : Tarjeta
-                  }
-                  alt=""
-                />
-              ) : null}
-            </div>
-            {isPortalPago === true && (
-              <Portal
-                onClose={() => {
-                  formik.setFieldValue('swPagado', false);
-                  setIsPortalPago(false);
-                }}
-              >
-                <MetodoPago setVal={formik.setFieldValue} name="metodoPago" onClose={setIsPortalPago} />
-              </Portal>
-            )}
+            ) : null}
           </div>
+          {iEdit && iEdit?.modeEditAll === false ? (
+            formik.values.listPago.length > 0 ? (
+              <div className="list-pagos">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>N°</th>
+                      <th>Metodo</th>
+                      <th>Fecha</th>
+                      <th>Monto</th>
+                      <th>Accion</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {formik.values.listPago.map((pago, index) => (
+                      <tr key={index}>
+                        <td>{index + 1}</td>
+                        <td>{pago.metodoPago}</td>
+                        <td>{pago.date.fecha}</td>
+                        <td>{pago.total}</td>
+                        <td className="space-action">
+                          {DateCurrent().format4 === pago.date.fecha ? (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setIPago(pago);
+                                  setIsPortalPago(!isPortalPago);
+                                }}
+                                className="btn-action btn-edit"
+                              >
+                                <i className="fa-solid fa-pen"></i>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  handleNoPagar(pago._id);
+                                }}
+                                className="btn-action btn-delete"
+                              >
+                                <i className="fa-solid fa-delete-left"></i>
+                              </button>
+                            </>
+                          ) : null}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="input-pay">
+                <label htmlFor="">Pago :</label>
+                <span>Pendiente</span>
+              </div>
+            )
+          ) : null}
+          {isPortalPago === true && (
+            <Portal
+              onClose={() => {
+                setIsPortalPago(false);
+              }}
+            >
+              <MetodoPago
+                handlePago={handlePago}
+                infoPago={iPago}
+                totalToPay={formik.values.totalNeto}
+                handleNoPagar={handleNoPagar}
+                onClose={setIsPortalPago}
+                modeUse={iEdit ? (iEdit.modeEditAll ? 'Reserved' : 'Edit') : 'New'}
+              />
+            </Portal>
+          )}
         </div>
         <div className="target-descuento">
           {!iEdit || iEdit?.estado === 'reservado' ? (

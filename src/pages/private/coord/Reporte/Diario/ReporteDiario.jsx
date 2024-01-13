@@ -56,12 +56,14 @@ const ReporteDiario = ({ onClose }) => {
                 <tr>
                   <th>Fecha Entrega</th>
                   <th>Cantidad</th>
-                  <th>Ropa x Kilo</th>
                   <th>Edredones</th>
-                  <th>Planchado</th>
+                  <th>Frazada</th>
+                  <th>Ropa x Kilo</th>
+                  <th>Cobertor</th>
                   <th>Zapatillas</th>
-                  <th>Cortinas</th>
-                  <th>Otros</th>
+                  <th>Saco</th>
+                  <th>Abrigo</th>
+                  <th>Terno</th>
                   <th>Delivery</th>
                 </tr>
               </thead>
@@ -70,11 +72,11 @@ const ReporteDiario = ({ onClose }) => {
                   <tr
                     key={index}
                     style={{
-                      background: DateCurrent().format4 === dayData.FechaEntrega ? '#ffd9d9' : null,
+                      background: DateCurrent().format4 === dayData.FechaPrevista ? '#ffd9d9' : null,
                     }}
-                    data-fechaentrega={dayData.FechaEntrega}
+                    data-fechaprevista={dayData.FechaPrevista}
                     ref={(element) => {
-                      if (element && DateCurrent().format4 === element.getAttribute('data-fechaentrega')) {
+                      if (element && DateCurrent().format4 === element.getAttribute('data-fechaprevista')) {
                         element.scrollIntoView({
                           behavior: 'smooth',
                           block: 'start',
@@ -82,9 +84,9 @@ const ReporteDiario = ({ onClose }) => {
                       }
                     }}
                   >
-                    <td>{dayData.FechaEntrega}</td>
+                    <td>{dayData.FechaPrevista}</td>
                     <td>{dayData.CantidadPedido}</td>
-                    {dayData.InfoCategoria.map((item, itemIndex) => (
+                    {dayData.InfoProducto.map((item, itemIndex) => (
                       <td key={itemIndex}>
                         {item.Cantidad % 1 !== 0 ? parseFloat(item.Cantidad).toFixed(2) : item.Cantidad}
                       </td>

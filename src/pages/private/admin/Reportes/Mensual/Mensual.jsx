@@ -18,7 +18,7 @@ const Mensual = ({ onClose }) => {
 
   const openModal = () => {
     onClose();
-    const month = moment(datePrincipal).format('MMMM');
+    const month = moment.utc(datePrincipal).format('MMMM');
     modals.openConfirmModal({
       title: 'Exportar a Excel',
       centered: true,

@@ -35,6 +35,8 @@ import axios from 'axios';
 
 import { AddOrdenServices } from '../../../../../redux/actions/aOrdenServices';
 import { documento, ingresoDigital, nameImpuesto, simboloMoneda } from '../../../../../services/global';
+import { handleGetInfoPago } from '../../../../../utils/functions';
+import ButtonSwitch from '../../../../../components/PRIVATE/MetodoPago/ButtonSwitch/ButtonSwitch';
 
 const AddOld = () => {
   const infoPrendas = useSelector((state) => state.prenda.infoPrendas);
@@ -54,6 +56,8 @@ const AddOld = () => {
   const [vScore, setVScore] = useState(null);
   // Impuesto
   const [impuesto, setImpuesto] = useState(null);
+
+  const [iPago, setIPago] = useState();
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -86,13 +90,11 @@ const AddOld = () => {
       phone: '',
       dateRecojo: '',
       datePrevista: '',
-      datePago: '',
+      listPago: [],
+      pago: 'Pendiente',
       productos: [],
       descuento: '',
       swModalidad: 'Tienda',
-      swPagado: false,
-      metodoPago: '',
-      //
       dni: '',
       subTotal: '',
       totalNeto: '',
@@ -121,26 +123,26 @@ const AddOld = () => {
 
   const openModal = (data) =>
     modals.openConfirmModal({
-      title: 'Registro de Factura',
+      title: 'Registro de Orden de Servicio',
       centered: true,
-      children: <Text size="sm">¿ Estas seguro de registrar esta factura ?</Text>,
+      children: <Text size="sm">¿ Estas seguro de registrar esta Orden de Servicio ?</Text>,
       labels: { confirm: 'Si', cancel: 'No' },
       confirmProps: { color: 'green' },
       //onCancel: () => console.log("Cancelado"),
       onConfirm: () => handleGetInfo(data),
     });
 
-  const addRowGarment = (/*tipo, */ producto, precio, stateCantidad /*, categoria*/) => {
+  const addRowGarment = (producto, precio, stateCantidad) => {
+    const tipo = producto === 'Otros' ? 'Otros' : 'Prenda';
     const newRow = {
       stado: stateCantidad,
       price: precio,
-      type: 'Prenda',
+      type: tipo,
       cantidad: 1,
-      producto: producto,
+      producto: producto === 'Otros' ? '' : producto,
       descripcion: '',
       expanded: false,
       total: precio,
-      // categoria: categoria,
     };
     return newRow;
   };
@@ -160,6 +162,29 @@ const AddOld = () => {
     }
   }
 
+  const handlePago = (value) => {
+    let newListPago = [];
+    let newStatePago;
+    if (value) {
+      newListPago.push(value);
+      newStatePago = handleGetInfoPago(newListPago, formik.values.totalNeto);
+      formik.setFieldValue('listPago', [value]);
+      formik.setFieldValue('pago', newStatePago.estado);
+    } else {
+      newListPago = [value];
+      const newStatePago = handleGetInfoPago(newListPago, formik.values.totalNeto);
+      formik.setFieldValue('pago', newStatePago.estado);
+    }
+    setIPago(value);
+  };
+
+  const handleNoPagar = () => {
+    let newListPago = [];
+    const newStatePago = handleGetInfoPago(newListPago, formik.values.totalNeto);
+    formik.setFieldValue('pago', newStatePago.estado);
+    setIPago();
+  };
+
   const handleGetInfo = (info) => {
     const infoProduct = info.productos.map((p) => ({
       cantidad: p.cantidad,
@@ -168,6 +193,16 @@ const AddOld = () => {
       precio: p.price,
       total: p.total,
     }));
+
+    const lPago = info.listPago.map((p) => {
+      return {
+        ...p,
+        date: {
+          fecha: tFecha(formik.values.dateRecojo),
+          hora: tHora(formik.values.dateRecojo),
+        },
+      };
+    });
 
     const infoRecibo = {
       codRecibo: info.codigo,
@@ -179,16 +214,8 @@ const AddOld = () => {
       Nombre: info.name,
       Producto: infoProduct,
       celular: info.phone,
-      Pago: info.swPagado ? 'Pagado' : 'Pendiente',
-      datePago: info.swPagado
-        ? {
-            fecha: tFecha(info.dateRecojo),
-            hora: tHora(infoNegocio.horario.horas.inicio, 1, 'despues'),
-          }
-        : {
-            fecha: '',
-            hora: '',
-          },
+      Pago: info.pago,
+      ListPago: lPago,
       datePrevista: {
         fecha: tFecha(info.datePrevista),
         hora: tHora(infoNegocio.horario.horas.fin, 1, 'antes'),
@@ -197,7 +224,6 @@ const AddOld = () => {
         fecha: '',
         hora: '',
       },
-      metodoPago: info.metodoPago,
       descuento: info.descuento,
       estadoPrenda: 'pendiente',
       estado: 'registrado',
@@ -298,17 +324,22 @@ const AddOld = () => {
     formik.values.factura,
     formik.values.subTotal,
   ]);
+
+  useEffect(() => {
+    handleNoPagar();
+  }, [formik.values.totalNeto]);
+
   return (
     <div className="space-ra">
       <div className="title-action">
-        <h1 className="elegantshadow">Agregando Factura</h1>
+        <h1 className="elegantshadow">Agregando Orden de Servicio</h1>
         <h1 className="elegantshadow">- Antigua -</h1>
       </div>
       <form onSubmit={formik.handleSubmit} className="content-registro-antiguo">
         <div className="info-ra">
           <>
             <div className="space-paralelos">
-              <div className="paralelo">
+              <div style={{ width: '300px', margin: '10px 20px' }}>
                 <Autocomplete
                   name="dni"
                   onChange={(dni) => {
@@ -336,6 +367,7 @@ const AddOld = () => {
                   <NumberInput
                     name="codigo"
                     label="Codigo :"
+                    placeholder="N° Talonario"
                     value={formik.values.codigo}
                     precision={0}
                     onChange={(e) => {
@@ -343,7 +375,7 @@ const AddOld = () => {
                     }}
                     min={1}
                     step={1}
-                    max={+codFinal}
+                    max={999999}
                     hideControls
                     autoComplete="off"
                   />
@@ -369,7 +401,7 @@ const AddOld = () => {
                   autoComplete="off"
                 />
               </div>
-              <div className="paralelo">
+              <div style={{ width: '300px', margin: '10px 20px' }}>
                 <div className="space-info">
                   <DateInput
                     label="Fecha Recojo :"
@@ -378,7 +410,6 @@ const AddOld = () => {
                     onChange={(date) => {
                       formik.setFieldValue('dateRecojo', date);
                       formik.setFieldValue('datePrevista', date);
-                      formik.setFieldValue('datePago', date);
                     }}
                     placeholder="Ingrese Fecha"
                     maxDate={moment().subtract(1, 'day').toDate()}
@@ -537,7 +568,7 @@ const AddOld = () => {
                           disabled={
                             row.producto === 'Ropa x Kilo'
                               ? false
-                              : row.type === 'productos' && row.stado === true
+                              : row.type === 'Prenda' && row.stado === true
                               ? true
                               : row.type === 'Delivery'
                               ? true
@@ -560,9 +591,9 @@ const AddOld = () => {
                           autoFocus={
                             row.producto === 'Ropa x Kilo'
                               ? true
-                              : row.type === 'otros'
+                              : row.producto === ''
                               ? true
-                              : row.type === 'productos' && row.stado === false
+                              : row.type === 'Prenda' && row.stado === false
                               ? true
                               : false
                           }
@@ -575,11 +606,11 @@ const AddOld = () => {
                           type="text"
                           className="txtProducto"
                           disabled={
-                            row.type === 'otros'
+                            row.type === 'Otros'
                               ? false
                               : row.type === ''
                               ? true
-                              : row.type === 'productos'
+                              : row.type === 'Prenda'
                               ? !row.estado
                               : true
                           }
@@ -602,8 +633,34 @@ const AddOld = () => {
                               className="hide"
                               rows={5}
                               name={`productos.${index}.descripcion`}
-                              defaultValue={formik.values.productos[index].descripcion}
-                              onChange={formik.handleChange}
+                              value={formik.values.productos[index].descripcion}
+                              disabled={row.type === 'Delivery' ? true : false}
+                              onChange={(e) => {
+                                const inputValue = e.target.value;
+
+                                // Verifica si el valor actual contiene el check "✔"
+                                const hasCheck = inputValue.includes('✔ ');
+
+                                // Si no hay un check y hay un texto, agrega el check automáticamente
+                                const updatedValue = hasCheck ? inputValue : inputValue ? '✔ ' + inputValue : '';
+
+                                console.log(updatedValue);
+                                formik.setFieldValue(`productos.${index}.descripcion`, updatedValue);
+                                // formik.setFieldValue(`productos.${index}.expanded`, true);
+                              }}
+                              onKeyDown={(event) => {
+                                if (event.key === 'Enter') {
+                                  event.preventDefault();
+
+                                  // Añade el check de "✔" al texto existente
+                                  const updatedValue = `${formik.values.productos[index].descripcion}\n✔ `;
+                                  formik.setFieldValue(`productos.${index}.descripcion`, updatedValue);
+
+                                  formik.setFieldValue(`productos.${index}.expanded`, true);
+                                  // const scrollHeight = event.target.scrollHeight;
+                                  // event.target.style.height = `${scrollHeight + 30}px`;
+                                }
+                              }}
                             />
                             <div
                               className="expand-button"
@@ -666,11 +723,7 @@ const AddOld = () => {
                 </tbody>
                 <tfoot>
                   <tr style={{ marginTop: '10px' }}>
-                    <td>
-                      {/* {dataScore && Object.keys(dataScore).length > 0
-                        ? `Total de Puntos : ${dataScore.scoreTotal}`
-                        : null} */}
-                    </td>
+                    <td></td>
                     <td>Subtotal :</td>
                     <td>
                       {simboloMoneda} {formik.values.subTotal}
@@ -678,29 +731,11 @@ const AddOld = () => {
                     <td></td>
                   </tr>
                   <tr>
-                    <td>
-                      {/* {dataScore && Object.keys(dataScore).length > 0 ? (
-                        <div className="input-number dsc">
-                          <label>Dsc x Puntos</label>
-                          <NumberInput
-                            defaultValue={formik.values.cargosExtras.beneficios.puntos}
-                            max={parseInt(dataScore.scoreTotal)}
-                            min={0}
-                            step={1}
-                            hideControls={true}
-                            onChange={(e) => {
-                              const data = dataScore.scoreTotal < e ? false : true;
-                              formik.setFieldValue('cargosExtras.descuentos.puntos', data ? MontoxPoints(e) : 0);
-                              formik.setFieldValue('cargosExtras.beneficios.puntos', e);
-                            }}
-                          />
-                        </div>
-                      ) : null} */}
-                    </td>
+                    <td></td>
                     {formik.values.factura ? (
                       <>
                         <td>
-                          {nameImpuesto} ({(InfoImpuesto * 100).toFixed(0)} %) :
+                          {nameImpuesto} ({(impuesto * 100).toFixed(0)} %) :
                         </td>
                         <td>
                           {simboloMoneda} {formik.values.cargosExtras.igv.importe}
@@ -716,8 +751,6 @@ const AddOld = () => {
                   </tr>
                   <tr>
                     <td></td>
-                    {/* <td>Descuento :</td> */}
-                    {/* <td>{simboloMoneda} {formik.values.descuento}</td> */}
                     <td></td>
                   </tr>
                   <tr>
@@ -736,83 +769,55 @@ const AddOld = () => {
             </div>
             <div className="footer">
               <div className="f-Pay">
-                <div className="input-switch">
-                  <label className="qData">Pagado:</label>
-                  <div
-                    className="switch-container"
-                    onClick={() => {
-                      if (!formik.values.swPagado === false) {
-                        formik.setFieldValue('metodoPago', '');
-                        setIsPortal(false);
-                      } else {
-                        setIsPortal(!isPortal);
-                      }
-                      formik.setFieldValue('swPagado', !formik.values.swPagado);
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      id="swPagado"
-                      checked={formik.values.swPagado}
-                      name="swPagado"
-                      onChange={() => {
-                        if (!formik.values.swPagado === false) {
-                          formik.setFieldValue('metodoPago', '');
-                          setIsPortal(false);
-                        } else {
-                          setIsPortal(!isPortal);
-                        }
-                        formik.setFieldValue('swPagado', !formik.values.swPagado);
-                      }}
-                    />
-                    <label htmlFor="swPagado" onClick={(e) => e.stopPropagation()} />
+                <div className="content-sb">
+                  <div className="input-pay ">
+                    <label htmlFor="">Pago :</label>
+                    <button className="btn-switch" type="button" onClick={() => setIsPortal(!isPortal)}>
+                      <ButtonSwitch pago={formik.values.pago} />
+                    </button>
                   </div>
+                  {iPago ? (
+                    <img
+                      tabIndex="-1"
+                      className={
+                        iPago.metodoPago === 'Efectivo'
+                          ? 'ico-efect'
+                          : iPago.metodoPago === ingresoDigital
+                          ? 'ico-tranf'
+                          : 'ico-card'
+                      }
+                      src={
+                        iPago.metodoPago === 'Efectivo'
+                          ? Efectivo
+                          : iPago?.metodoPago === ingresoDigital
+                          ? Tranferencia
+                          : Tarjeta
+                      }
+                      alt=""
+                    />
+                  ) : null}
                 </div>
-                {formik.values.metodoPago !== '' ? (
-                  <img
-                    tabIndex="-1"
-                    className={
-                      formik.values.metodoPago === 'Efectivo'
-                        ? 'ico-efect'
-                        : formik.values.metodoPago === ingresoDigital
-                        ? 'ico-tranf'
-                        : 'ico-card'
-                    }
-                    src={
-                      formik.values.metodoPago === 'Efectivo'
-                        ? Efectivo
-                        : formik.values.metodoPago === ingresoDigital
-                        ? Tranferencia
-                        : Tarjeta
-                    }
-                    alt=""
-                  />
+                {iPago ? (
+                  <div className="info-pago">{`${iPago.metodoPago} ${simboloMoneda}${iPago.total} : ${formik.values.pago}`}</div>
                 ) : null}
               </div>
-              {formik.values.metodoPago !== '' && formik.values.dateRecojo !== '' ? (
-                <DateInput
-                  label="Fecha Pago :"
-                  name="datePago"
-                  value={formik.values.datePago}
-                  onChange={(date) => {
-                    formik.setFieldValue('datePago', date);
-                  }}
-                  style={{
-                    pointerEvents: 'none',
-                  }}
-                />
-              ) : null}
-              {isPortal === true && (
-                <Portal
-                  onClose={() => {
-                    formik.setFieldValue('swPagado', false);
-                    setIsPortal(false);
-                  }}
-                >
-                  <MetodoPago setVal={formik.setFieldValue} name="metodoPago" onClose={setIsPortal} />
-                </Portal>
-              )}
             </div>
+            {isPortal === true && (
+              <Portal
+                onClose={() => {
+                  setIsPortal(false);
+                }}
+              >
+                <MetodoPago
+                  handlePago={handlePago}
+                  infoPago={iPago}
+                  totalToPay={formik.values.totalNeto}
+                  handleNoPagar={handleNoPagar}
+                  onClose={setIsPortal}
+                  modeUse={'New'}
+                />
+              </Portal>
+            )}
             <div className="action-end">
               <button type="submit">Registrar</button>
               <button

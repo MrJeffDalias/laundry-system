@@ -544,98 +544,128 @@
                 width: 100%;
                 margin: 18px auto;
                 .f-Pay {
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
+                    display: grid;
+                    gap: 10px;
                     position: relative;
-                    .input-switch {
-                        display: flex;
-                        // priorizar q el width siempre sea mayor  q el height almenos una diferencia de 10 puntos
-                        $swidth: 100px;
-                        $sheight: 30px;
-                        @if $sheight > $swidth {
-                            $sheight: $swidth - 10px;
-                        }
-                        .qData {
-                            margin: auto 10px;
-                        }
-                        .switch-container {
-                            width: $swidth;
-                            height: calc($sheight + $sheight * 0.25);
-                            border-radius: 10em;
-                            border: 1px solid #3d44c9;
-                            position: relative;
-                            input {
-                                display: none;
-                                &:checked ~ label::before {
-                                    opacity: 0;
-                                }
-                                &:checked ~ label::after {
-                                    opacity: 1;
-                                }
-                                &:checked ~ label {
-                                    transform: translatex(calc($swidth - ($sheight + ($swidth * 0.2)))) rotatez(360deg);
-                                }
-                                & ~ label {
-                                    transition: all 1s cubic-bezier(0.34, 1.36, 0.2, 1);
-                                }
-                            }
+                    .content-sb {
+                        position: relative;
+                        width: 200px;
+                        .input-pay {
+                            display: grid;
+                            gap: 5px;
                             label {
-                                width: $sheight;
-                                height: $sheight;
-                                border-radius: 10em;
-                                background: white;
-                                position: absolute;
-                                top: 5%;
-                                left: 10%;
-                                box-shadow: 2px 2px 10px 2px #cfd8dc;
-                                z-index: 0;
-                                margin-bottom: 0;
-                                cursor: pointer;
-
-                                &::before {
-                                    font-family: "Font Awesome 6 Free";
-                                    font-weight: 900;
-                                    font-size: 1.5em;
-                                    content: "\f00d";
-                                    position: absolute;
-                                    left: 22%;
-                                    top: -5%;
-                                    color: #e9182a;
-                                }
-                                &::after {
-                                    font-family: "Font Awesome 6 Free";
-                                    font-weight: 900;
-                                    font-size: 1.2em;
-                                    content: "\f00c";
-                                    position: absolute;
-                                    left: 25%;
-                                    top: 12%;
-                                    opacity: 0;
-                                    color: #00e676;
-                                }
+                                padding-left: 10px;
+                                font-size: 19px;
+                                color: #5e5e5e;
+                                font-weight: bolder;
+                            }
+                            .btn-switch {
+                                background: transparent;
+                                width: min-content;
+                                border: none;
+                                border-radius: 50px;
+                                padding: 0;
                             }
                         }
+                        img {
+                            width: 50px;
+                            height: 50px;
+                            margin: 0 10px;
+                            position: absolute;
+                            right: -25px;
+                            outline: none;
+                            user-select: none;
+                        }
+                        .ico-efect {
+                            bottom: -8px;
+                        }
+                        .ico-tranf {
+                            bottom: 4px;
+                        }
+                        .ico-card {
+                            bottom: 5px;
+                        }
                     }
-                    img {
-                        width: 50px;
-                        height: 50px;
-                        margin: auto 10px;
-                        position: absolute;
-                        right: -72px;
-                        outline: none;
-                        user-select: none;
-                    }
-                    .ico-efect {
-                        top: 2px;
-                    }
-                    .ico-tranf {
-                        top: -5px;
-                    }
-                    .ico-card {
-                        top: -15px;
+                    .info-pago {
+                        border: 1px solid #777;
+                        padding: 5px 20px;
+                        font-size: 18px;
+                        font-weight: 700;
+                        text-align: center;
+                        color: #555454;
                     }
                 }
+            }
+            .list-pagos {
+                width: min-content;
+                background: #fff;
+                margin: 0;
+                padding: 0;
+                font-family: "Arial", sans-serif;
+                border-bottom: #009688;
+                border-radius: 29px;
+                table {
+                    width: max-content;
+                    border-collapse: collapse;
+
+                    thead {
+                        background-color: #009688;
+                        color: #ffffff;
+
+                        th {
+                            padding: 10px;
+                            text-align: left;
+                        }
+                    }
+
+                    tbody {
+                        tr {
+                            border-bottom: 1px solid #dddddd;
+
+                            &:nth-child(even) {
+                                background-color: #f2f2f2;
+                            }
+
+                            td {
+                                padding: 8px;
+                                text-align: center;
+
+                                &:first-child {
+                                    font-weight: bold;
+                                }
+                            }
+                        }
+                    }
+                }
+                .space-action {
+                    display: flex;
+                    gap: 10px;
+                    .btn-action {
+                        width: 40px;
+                        height: 40px;
+                        padding: 10px;
+                        border: none;
+                        border-radius: 10px;
+                        background: #444444;
+                        color: #fff;
+                    }
+                    .btn-edit {
+                        &:hover {
+                            background: #f4af19;
+                        }
+                    }
+                    .btn-delete {
+                        &:hover {
+                            background: #ff2929;
+                        }
+                    }
+                }
+            }
+            .input-pay {
+                display: flex;
+                gap: 10px;
+                font-size: 17px;
+                font-weight: 600;
             }
         }
         .target-descuento {

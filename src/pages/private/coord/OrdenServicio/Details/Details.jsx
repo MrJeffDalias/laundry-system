@@ -16,12 +16,17 @@ import { PrivateRoutes, Roles } from '../../../../../models';
 import './details.scss';
 import { useState } from 'react';
 import moment from 'moment';
+import { DateDetail_Hora } from '../../../../../utils/functions/dateCurrent/dateCurrent';
+import { simboloMoneda } from '../../../../../services/global';
+import { cLetter, handleGetInfoPago } from '../../../../../utils/functions';
 
 const Details = ({ IdCliente }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [showNotas, setShowNotas] = useState(false);
   const [dateDonated, setDateDonated] = useState();
+  const [statePago, setStatePago] = useState();
+
   const infoCliente = useSelector((state) => state.orden.registered.find((item) => item._id === IdCliente));
   const InfoUsuario = useSelector((state) => state.user.infoUsuario);
 
@@ -54,6 +59,12 @@ const Details = ({ IdCliente }) => {
     };
     fetchData();
   }, [infoCliente.Modalidad, infoCliente.estadoPrenda, IdCliente]);
+
+  useEffect(() => {
+    if (infoCliente) {
+      setStatePago(handleGetInfoPago(infoCliente.ListPago, infoCliente.totalNeto));
+    }
+  }, [infoCliente]);
 
   return (
     <div className="content-detail">
@@ -176,6 +187,63 @@ const Details = ({ IdCliente }) => {
           <div className="more-a">
             <h2>Total - S/{infoCliente.totalNeto}</h2>{' '}
           </div>
+          <div className="list-pagos">
+            <div className="title">Lista de Pagos</div>
+            <ul>
+              {infoCliente.ListPago.map((p, index) => (
+                <li className="i-pago" key={index}>
+                  {/* <span className="_id">{index + 1}</span> */}
+                  <span className="_fecha">{DateDetail_Hora(p.date.fecha, p.date.hora)}</span>
+                  <span className="_monto">
+                    {simboloMoneda}
+                    {p.total}
+                  </span>
+                  <span className="_metodopago">{cLetter(p.metodoPago)}</span>
+                  <span className="_ico">
+                    {p.metodoPago === 'Tarjeta' ? (
+                      <i className="fa-solid fa-credit-card" />
+                    ) : p.metodoPago === 'Efectivo' ? (
+                      <i className="fa-solid fa-sack-dollar" />
+                    ) : (
+                      <i className="fa-solid fa-money-bill-transfer" />
+                    )}
+                  </span>
+                </li>
+              ))}
+              <li className="i-final">
+                <span></span>
+                <span className="if-estado"></span>
+                <span className="if-monto">
+                  <div>
+                    <div className="l-info">
+                      <span>Subtotal :</span>
+                    </div>
+                    <div>
+                      {simboloMoneda}
+                      {statePago?.pago}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="l-info">
+                      <span>Estado :</span>
+                    </div>
+                    <div> {statePago?.estado}</div>
+                  </div>
+                  {statePago?.estado !== 'Completo' ? (
+                    <div>
+                      <div className="l-info">
+                        <span>Falta :</span>
+                      </div>
+                      <div>
+                        {simboloMoneda}
+                        {statePago?.falta}
+                      </div>
+                    </div>
+                  ) : null}
+                </span>
+              </li>
+            </ul>
+          </div>
           {infoCliente.Modalidad === 'Delivery' && iDelivery ? (
             <div className="list-delivery">
               {iDelivery.map((e) => (
@@ -188,13 +256,13 @@ const Details = ({ IdCliente }) => {
           <table className="info-table">
             <tbody>
               <tr>
-                <td>Fecha Ingreso:</td>
+                <td>Fecha Recepcion:</td>
                 <td>
                   {infoCliente.dateRecepcion.fecha} / {infoCliente.dateRecepcion.hora}
                 </td>
               </tr>
               <tr>
-                <td>Fecha Entrega (Programada) :</td>
+                <td>Fecha Prevista:</td>
                 <td>
                   {infoCliente.datePrevista.fecha} / {infoCliente.datePrevista.hora}
                 </td>
@@ -210,17 +278,6 @@ const Details = ({ IdCliente }) => {
                   </td>
                 </tr>
               ) : null}
-              <tr>
-                <td>Fecha Pago:</td>
-                <td>
-                  {infoCliente.Pago === 'Pagado'
-                    ? `${infoCliente.datePago.fecha} / ${infoCliente.datePago.hora} `
-                    : 'PAGO PENDIENTE '}
-                  <div className="md-pago">
-                    {infoCliente.Pago === 'Pagado' ? `Pago por : ${infoCliente.metodoPago}` : null}
-                  </div>
-                </td>
-              </tr>
             </tbody>
           </table>
         </div>

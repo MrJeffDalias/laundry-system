@@ -104,7 +104,6 @@ const CuadreCaja = () => {
       }, 0);
     }
 
-    //setMTotalCaja(totalNeto.toFixed(2));
     return totalNeto.toFixed(2);
   };
 
@@ -183,10 +182,9 @@ const CuadreCaja = () => {
 
   const sumaMontos = (clientes) => {
     // console.log(clientes.filter((cliente) => cliente.metodoPago !== 'YAPE'));
-    console.log();
     return clientes
       .filter((cliente) => !(cliente.typeRegistro === 'pendiente' && cliente.estadoPrenda === 'anulado'))
-      .reduce((sum, cliente) => sum + (parseFloat(cliente.totalNeto) || 0), 0)
+      .reduce((sum, cliente) => sum + (parseFloat(cliente.total) || 0), 0)
       .toFixed(2);
   };
 
@@ -201,7 +199,6 @@ const CuadreCaja = () => {
   };
 
   const handleGetInfoCuadre = async () => {
-    // await dispatch(GetLastCuadre());
     await dispatch(GetCuadre(datePrincipal.fecha));
     await dispatch(GetDeliverysDate(datePrincipal.fecha));
     await dispatch(GetGastoDate(datePrincipal.fecha));
@@ -213,7 +210,7 @@ const CuadreCaja = () => {
       const clientesAprobadosPromises = await Promise.all(
         clientes.map(async (d) => {
           const valid = async () => {
-            if (d.Pago === 'Pagado') {
+            if (d.Pago !== 'Pendiente') {
               if (d.estadoPrenda === 'anulado') {
                 const infoAnulacion = await GetAnuladoId(d._id);
                 if (infoAnulacion.fecha === datePrincipal.fecha) {
@@ -230,12 +227,7 @@ const CuadreCaja = () => {
           };
 
           if (await valid()) {
-            // Usamos await para esperar la resolución de la función asincrónica
-            if (d.modeRegistro !== 'antiguo') {
-              return d;
-            } else {
-              return d.datePago.fecha !== d.dateRecepcion.fecha ? d : null;
-            }
+            return d;
           }
 
           return null;
@@ -249,11 +241,54 @@ const CuadreCaja = () => {
       if (infoRegisteredDay) {
         const clientesAprobados = await procesarClientesAprobados(infoRegisteredDay);
 
+        const agruparPagosPorMetodo = (facturas, fechaPrincipal) => {
+          const resultados = [];
+          let index = 0;
+
+          facturas.forEach((factura) => {
+            const pagosPorMetodo = {};
+
+            factura.ListPago.forEach((pago) => {
+              // Verifica si la factura es antigua y si la fecha del pago es distinta de la fecha de recepción
+              const esPagoValido =
+                (factura.modeRegistro !== 'antiguo' && pago.date.fecha === fechaPrincipal) ||
+                (factura.modeRegistro === 'antiguo' &&
+                  pago.date.fecha !== factura.dateRecepcion.fecha &&
+                  pago.date.fecha === fechaPrincipal);
+
+              if (esPagoValido) {
+                const metodo = pago.metodoPago;
+
+                if (!pagosPorMetodo[metodo]) {
+                  pagosPorMetodo[metodo] = {
+                    _id: factura._id,
+                    codRecibo: factura.codRecibo,
+                    Modalidad: factura.Modalidad,
+                    estadoPrenda: factura.estadoPrenda,
+                    metodoPago: metodo,
+                    Nombre: factura.Nombre,
+                    total: 0,
+                  };
+                }
+                pagosPorMetodo[metodo].total += pago.total;
+              }
+            });
+
+            for (const metodo in pagosPorMetodo) {
+              resultados.push({ ...pagosPorMetodo[metodo], index: index++ });
+            }
+          });
+
+          return resultados;
+        };
+
+        const resultadosAgrupados = await agruparPagosPorMetodo(clientesAprobados, datePrincipal.fecha);
+
         //const facturados = clientesAprobados.filter((d) => d.factura === true);
 
-        const cEfectivo = clientesAprobados.filter((d) => d.metodoPago === 'Efectivo');
-        const cTransferencia = clientesAprobados.filter((d) => d.metodoPago === ingresoDigital);
-        const cTarjeta = clientesAprobados.filter((d) => d.metodoPago === 'Tarjeta');
+        const cEfectivo = resultadosAgrupados.filter((d) => d.metodoPago === 'Efectivo');
+        const cTransferencia = resultadosAgrupados.filter((d) => d.metodoPago === ingresoDigital);
+        const cTarjeta = resultadosAgrupados.filter((d) => d.metodoPago === 'Tarjeta');
 
         setPedidosPagadosEfectivo(sumaMontos(cEfectivo));
         setPedidosPagadosTransferencia(sumaMontos(cTransferencia));
@@ -283,7 +318,7 @@ const CuadreCaja = () => {
 
               return {
                 ...commonProperties,
-                cSuma: infoAnulacion.fecha !== d.fecha && orderByDelivery.typeRegistro === 'normal',
+                cSuma: infoAnulacion.fecha !== d.fecha,
               };
             } else {
               return {
@@ -712,7 +747,7 @@ const CuadreCaja = () => {
                                 <td>{cliente.codRecibo}</td>
                                 <td>{cliente.Modalidad}</td>
                                 <td>{cliente.Nombre}</td>
-                                <td>{cliente.totalNeto}</td>
+                                <td>{cliente.total}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -775,7 +810,7 @@ const CuadreCaja = () => {
                                   <td>{cliente.codRecibo}</td>
                                   <td>{cliente.Modalidad}</td>
                                   <td>{cliente.Nombre}</td>
-                                  <td>{cliente.totalNeto}</td>
+                                  <td>{cliente.total}</td>
                                 </tr>
                               ))}
                             </tbody>
@@ -807,7 +842,7 @@ const CuadreCaja = () => {
                                   <td>{cliente.codRecibo}</td>
                                   <td>{cliente.Modalidad}</td>
                                   <td>{cliente.Nombre}</td>
-                                  <td>{cliente.totalNeto}</td>
+                                  <td>{cliente.total}</td>
                                 </tr>
                               ))}
                             </tbody>

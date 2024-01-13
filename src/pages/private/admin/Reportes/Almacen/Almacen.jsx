@@ -14,7 +14,7 @@ import { useDisclosure } from '@mantine/hooks';
 import { Box, MultiSelect } from '@mantine/core';
 import { List, ThemeIcon } from '@mantine/core';
 import imgDetalle from '../../../../../utils/img/Otros/detalle2.png';
-import { handleOnWaiting, handleProductoCantidad } from '../../../../../utils/functions';
+import { handleGetInfoPago, handleOnWaiting, handleProductoCantidad } from '../../../../../utils/functions';
 
 import Detalle from '../Detalle/Detalle';
 import { handleRemoveFStorage } from '../../../../../services/default.services';
@@ -75,12 +75,11 @@ const Almacen = () => {
         'Orden',
         'Nombre',
         'Modalidad',
+        'Monto Pagado',
         'Pago',
+        'Total Neto',
         'Productos',
-        //'Cantidad',
-        'Monto',
         'Celular',
-        'Fecha de Almacenamiento',
         'En Espera',
         'Fecha de Ingreso',
       ])
@@ -91,23 +90,23 @@ const Almacen = () => {
     infoAlmacenados.forEach((item) => {
       //const quantitiesText = item.cantidad.join('\n');
       const productsText = Array.from(item.Producto).join('\n');
+      const estadoPago = handleGetInfoPago(item.ListPago, item.totalNeto);
 
       worksheet.addRow([
         item.Recibo,
         item.Nombre,
         item.Modalidad,
-        item.Pago,
+        estadoPago.pago > 0 ? `${simboloMoneda} ${estadoPago.pago}` : '-',
+        estadoPago.estado,
+        `${simboloMoneda} ${item.totalNeto}`,
         productsText,
-        //quantitiesText,
-        item.totalNeto,
-        item.Celular,
-        item.FechaAlmacenamiento.fecha,
+        item.Celular ? item.Celular : '-',
         item.onWaiting.showText,
         item.FechaIngreso.fecha,
       ]);
     });
 
-    const productsColumn = worksheet.getColumn(5);
+    const productsColumn = worksheet.getColumn(7);
 
     worksheet.eachRow((row) => {
       row.alignment = { wrapText: true, horizontal: 'center', vertical: 'middle' };
@@ -127,7 +126,7 @@ const Almacen = () => {
 
     const maxLineLengths = [];
     await worksheet.eachRow({ includeEmpty: true }, (row) => {
-      const cell = row.getCell(5); // Obtener la celda de la columna "Products"
+      const cell = row.getCell(7); // Obtener la celda de la columna "Products"
       const lines = cell.text.split('\n');
       let maxLength = 0;
       lines.forEach((line) => {
@@ -245,7 +244,7 @@ const Almacen = () => {
       totalNeto: `${simboloMoneda} ${info.totalNeto}`,
       Celular: info.celular,
       Pago: info.Pago,
-      MetodoPago: info.metodoPago,
+      ListPago: info.ListPago,
       FechaPago: info.datePago,
       FechaIngreso: info.dateRecepcion,
       FechaPrevista: info.datePrevista,
