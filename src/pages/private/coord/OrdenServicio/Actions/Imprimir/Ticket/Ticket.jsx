@@ -301,7 +301,9 @@ const Ticket = React.forwardRef((props, ref) => {
                       <h2 style={{ fontSize: '0.8em', textAlign: 'justify' }}>{promo.descripcion}</h2>
                       <h2 className="cod-i">codigo: {promo.codigoCupon}</h2>
                     </div>
-                    e
+                    <div className="img-pet">
+                      <img src={Pet} alt="" />
+                    </div>
                   </div>
                   <div className="notice">
                     <span>CÁNJELO EN SU PRÓXIMA ORDEN</span>
