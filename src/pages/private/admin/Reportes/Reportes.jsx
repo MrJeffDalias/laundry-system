@@ -3,14 +3,16 @@ import React, { useState } from 'react';
 import './reportes.scss';
 import { Link } from 'react-router-dom';
 import { PrivateRoutes } from '../../../../models';
-import { useDisclosure } from '@mantine/hooks';
-import { Modal, ScrollArea } from '@mantine/core';
-import Mensual from './Mensual/Mensual';
+import Ordenes from './Ordenes/Ordenes';
+import Gasto from './Gastos/Gasto';
+import Portal from '../../../../components/PRIVATE/Portal/Portal';
 
 const Reportes = () => {
-  const [opened, { open, close }] = useDisclosure(false);
   const [isMenuActive, setIsMenuActive] = useState(true);
   const [titleCenter, setTitleCenter] = useState();
+
+  const [mMensual, setMMensual] = useState(false);
+  const [mGasto, setMGasto] = useState(false);
 
   const toggleMenu = () => {
     setIsMenuActive(!isMenuActive);
@@ -41,7 +43,7 @@ const Reportes = () => {
       ico: 'fa-solid fa-calendar',
       type_show: 'modal',
       title: 'Reporte Mensual',
-      page: `/${PrivateRoutes.PRIVATE}/${PrivateRoutes.REPORTE_MENSUAL}`,
+      page: () => setMMensual(true),
     },
     {
       id: '2',
@@ -49,6 +51,13 @@ const Reportes = () => {
       type_show: 'page',
       title: 'Reporte de Almacen',
       page: `/${PrivateRoutes.PRIVATE}/${PrivateRoutes.REPORTE_ALMACEN}`,
+    },
+    {
+      id: '3',
+      ico: 'fas fa-hand-holding-usd',
+      type_show: 'modal',
+      title: 'Reporte de Gastos',
+      page: () => setMGasto(true),
     },
   ];
 
@@ -75,7 +84,7 @@ const Reportes = () => {
             <span className={`fa ${report.ico}`}></span>
           </Link>
         ) : (
-          <button className="btn-report" onClick={open} style={sA}>
+          <button className="btn-report" onClick={report.page} style={sA}>
             <span className={`fa ${report.ico}`}></span>
           </button>
         )}
@@ -95,18 +104,24 @@ const Reportes = () => {
           </nav>
         </div>
       </div>
-      <Modal
-        opened={opened}
-        onClose={() => {
-          close();
-        }}
-        size={550}
-        scrollAreaComponent={ScrollArea.Autosize}
-        title="Exportacion de Reporte Mensual"
-        centered
-      >
-        <Mensual onClose={() => close()} />
-      </Modal>
+      {mMensual && (
+        <Portal
+          onClose={() => {
+            setMMensual(false);
+          }}
+        >
+          <Ordenes onClose={() => setMMensual(false)} />
+        </Portal>
+      )}
+      {mGasto && (
+        <Portal
+          onClose={() => {
+            setMGasto(false);
+          }}
+        >
+          <Gasto onClose={() => setMGasto(false)} />
+        </Portal>
+      )}
     </div>
   );
 };

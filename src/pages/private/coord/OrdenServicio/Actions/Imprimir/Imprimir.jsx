@@ -9,9 +9,8 @@ import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { Notify } from '../../../../../../utils/notify/Notify';
 import { codigoPhonePais, simboloMoneda } from '../../../../../../services/global';
-import { DateDetail } from '../../../../../../utils/functions';
+import { DateDetail, handleGetInfoPago } from '../../../../../../utils/functions';
 import { WSendMessage } from '../../../../../../services/default.services';
-import moment from 'moment';
 
 const index = () => {
   const { id } = useParams();
@@ -24,16 +23,18 @@ const index = () => {
 
   const handleSendMessage = () => {
     const number = phoneA;
+    const sPago = handleGetInfoPago(infoOrden.ListPago, infoOrden.totalNeto);
 
     if (number) {
       const mensaje = `¡Hola *${infoOrden.Nombre}* ! Le saluda la *Lavanderia ${InfoNegocio.name}*, Su Orden es la *#${
         infoOrden.codRecibo
       }*, ${
-        infoOrden.Pago === 'Pagado' ? `ya esta *PAGADO*` : `con monto a pagar *${simboloMoneda}${infoOrden.totalNeto}*`
-      } su entrega es el día ${DateDetail(infoOrden.datePrevista.fecha)} - ${moment(
-        infoOrden.datePrevista.hora,
-        'HH:mm'
-      ).format('hh:mm A')}`;
+        infoOrden.Pago === 'Completo'
+          ? `ya esta *PAGADO*`
+          : infoOrden.Pago === 'Incompleto'
+          ? `con monto pendiente de *${simboloMoneda}${sPago.falta}*`
+          : `con monto a pagar *${simboloMoneda}${infoOrden.totalNeto}*`
+      }, su entrega es el día ${DateDetail(infoOrden.datePrevista.fecha)}`;
       for (let index = 0; index < 2; index++) {
         WSendMessage(mensaje, number);
       }

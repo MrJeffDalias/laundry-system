@@ -295,14 +295,18 @@ const Almacen = () => {
         accessorKey: 'Pago',
         header: 'Pago',
         filterVariant: 'select',
-        mantineFilterSelectProps: { data: ['Pagado', 'Pendiente'] },
-        mantineFilterTextInputProps: { placeholder: 'SI / NO' },
+        mantineFilterSelectProps: { data: ['Completo', 'Incompleto', 'Pendiente'] },
+        mantineFilterTextInputProps: { placeholder: 'C / I / P' },
         editVariant: 'select',
         mantineEditSelectProps: {
           data: [
             {
-              value: 'Pagado',
-              label: 'Pagado',
+              value: 'Completo',
+              label: 'Completo',
+            },
+            {
+              value: 'Incompleto',
+              label: 'Incompleto',
             },
             {
               value: 'Pendiente',

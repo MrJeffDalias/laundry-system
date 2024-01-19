@@ -14,7 +14,7 @@ $sText: 0.8em;
 .container-ticket {
     width: $widthG_mm;
     display: grid;
-    grid-template-rows: min-content min-content 5px;
+    grid-template-rows: min-content min-content max-content;
     font-family: "Source Sans Pro", sans-serif;
     background: #fff;
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
@@ -186,7 +186,7 @@ $sText: 0.8em;
                 .title {
                     border: none;
                     line-height: 1;
-                    font-size: calc($sH1 - 0.05em);
+                    font-size: calc($sH1 - 0.1em);
                     color: #000;
                 }
                 .info-promo {
@@ -312,7 +312,9 @@ $sText: 0.8em;
             }
 
             img {
-                width: calc($sImgPromo - 10px);
+                width: 100%;
+                height: 100px;
+                max-height: $sImgPromo;
                 float: right;
                 transform: scaleX(-1);
             }
@@ -327,9 +329,23 @@ $sText: 0.8em;
         padding: 0 5px;
         visibility: visible;
         box-shadow: none;
+
         h1,
         h2 {
             color: #000 !important;
         }
+    }
+    .body-orden-service {
+        page-break-after: avoid;
+        page-break-after: always;
+    }
+    .container-promociones {
+        page-break-after: always;
+        .info-promo {
+            border-top: none !important;
+        }
+    }
+    .mt-item {
+        page-break-after: always;
     }
 }

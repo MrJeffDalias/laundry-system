@@ -22,8 +22,9 @@ export const PrivateRoutes = {
   // ----
   REPORTES: 'reportes',
   REPORTE_PENDIENTES: 'reporte-pendientes',
-  REPORTE_MENSUAL: 'reporte-mensual',
+  REPORTE_ORDENES: 'reporte-ordenes',
   REPORTE_ALMACEN: 'reporte-almacen',
+  REPORTE_GASTO: 'reporte-gasto',
   // COORD
   LIST_ORDER_SERVICE: 'list-orden-servicio',
   EDIT_ORDER_SERVICE: 'update-orden-servicio',

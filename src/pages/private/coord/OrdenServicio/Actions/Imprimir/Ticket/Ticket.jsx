@@ -26,7 +26,7 @@ const Ticket = React.forwardRef((props, ref) => {
   const calcularFechaFutura = (numeroDeDias) => {
     const fechaActual = moment();
     const nuevaFecha = fechaActual.clone().add(numeroDeDias, 'days');
-    return nuevaFecha.format('DD / MM / YYYY');
+    return nuevaFecha.format('D [de] MMMM[, del] YYYY');
   };
 
   const handleGetInfoPromo = async (codigoCupon) => {
@@ -200,25 +200,19 @@ const Ticket = React.forwardRef((props, ref) => {
                 <table>
                   <thead>
                     <tr>
-                      <th>ID</th>
-                      <th>Item</th>
+                      <th></th>
+                      <th>Producto</th>
                       <th>Cant</th>
                       <th>Subt</th>
                     </tr>
-                    {/* <tr>
-                      <th>ID</th>
-                      <th>Item</th>
-                      <th>Cantidad</th>
-                      <th>Subtotal</th>
-                    </tr> */}
                   </thead>
                   <tbody>
                     {infoOrden.Producto.filter((p) => p.categoria !== 'Delivery').map((p, index) => (
                       <React.Fragment key={`${infoOrden._id}-${index}`}>
                         <tr>
-                          <td>{index + 1}</td>
+                          <td>•</td>
                           <td>{p.producto}</td>
-                          <td>{roundDecimal(p.cantidad)} </td>
+                          <td>{p.producto === 'Ropa x Kilo' ? roundDecimal(p.cantidad) : parseInt(p.cantidad)}</td>
                           <td>{roundDecimal(p.total)}</td>
                         </tr>
                         {forW && p.descripcion ? (
@@ -288,7 +282,7 @@ const Ticket = React.forwardRef((props, ref) => {
                 Pago : {simboloMoneda} {handleGetInfoPago(infoOrden.ListPago, infoOrden.totalNeto).pago}
               </h2>
               <h3 className={`${infoOrden.factura ? null : 'sf'} estado`}>
-                {handleGetInfoPago(infoOrden.ListPago, infoOrden.totalNeto).estado}
+                {handleGetInfoPago(infoOrden.ListPago, infoOrden.totalNeto).estado.toUpperCase()}
               </h3>
               {infoOrden.factura ? <h2 className="cangeo-factura">Canjear Orden de Servicio por Factura</h2> : null}
             </div>
@@ -307,9 +301,7 @@ const Ticket = React.forwardRef((props, ref) => {
                       <h2 style={{ fontSize: '0.8em', textAlign: 'justify' }}>{promo.descripcion}</h2>
                       <h2 className="cod-i">codigo: {promo.codigoCupon}</h2>
                     </div>
-                    <div className="img-pet">
-                      <img src={Pet} alt="" />
-                    </div>
+                    e
                   </div>
                   <div className="notice">
                     <span>CÁNJELO EN SU PRÓXIMA ORDEN</span>

@@ -7,22 +7,22 @@ import ExcelJS from 'exceljs';
 import { Text } from '@mantine/core';
 import { modals } from '@mantine/modals';
 import { MonthPickerInput } from '@mantine/dates';
-import './mensual.scss';
+import './ordenes.scss';
 import { Notify } from '../../../../../utils/notify/Notify';
 import moment from 'moment';
-import { handleProductoCantidad } from '../../../../../utils/functions';
+import { handleGetInfoPago, handleProductoCantidad } from '../../../../../utils/functions';
 import { simboloMoneda } from '../../../../../services/global';
 
-const Mensual = ({ onClose }) => {
+const Ordenes = ({ onClose }) => {
   const [datePrincipal, setDatePrincipal] = useState(new Date());
 
   const openModal = () => {
     onClose();
     const month = moment.utc(datePrincipal).format('MMMM');
     modals.openConfirmModal({
-      title: 'Exportar a Excel',
+      title: 'Reporte de Ordenes Mensual',
       centered: true,
-      children: <Text size="sm">¿ Desea Generar Reporte Excel de : {month.toUpperCase()} ?</Text>,
+      children: <Text size="sm">¿ Desea Generar Reporte de : {month.toUpperCase()} ?</Text>,
       labels: { confirm: 'Si', cancel: 'No' },
       confirmProps: { color: 'green' },
       onConfirm: () => exportToExcel(),
@@ -41,6 +41,7 @@ const Mensual = ({ onClose }) => {
       const response = await axios.get(
         `${import.meta.env.VITE_BACKEND_URL}/api/lava-ya/get-reporte-mensual?mes=${mes}&anio=${anio}`
       );
+
       if (response.data) {
         // Crear un nuevo libro de Excel
         const workbook = new ExcelJS.Workbook();
@@ -62,16 +63,15 @@ const Mensual = ({ onClose }) => {
         // Agregar la cabecera
         worksheet
           .addRow([
-            'Orden N°',
+            'N° Orden',
             'Nombre',
             'Modalidad',
-            'Pago',
             'Productos',
-            // 'Cantidad',
-            'Monto',
+            'Monto Pagado',
+            'Pago',
+            'Total Neto',
             'Celular',
             'Documento',
-            'Medio de Pago',
             'Fecha de Ingreso',
             'Fecha de Salida',
           ])
@@ -81,24 +81,24 @@ const Mensual = ({ onClose }) => {
           });
         response.data.forEach((item) => {
           const productsText = Array.from(handleProductoCantidad(item.Producto)).join('\n');
+          const estadoPago = handleGetInfoPago(item.ListPago, item.totalNeto);
 
           worksheet.addRow([
             String(item.codRecibo).padStart(4, '0'),
             item.Nombre,
             item.Modalidad,
-            item.Pago,
             productsText,
-            // quantitiesText,
+            estadoPago.pago > 0 ? `${simboloMoneda} ${estadoPago.pago}` : '-',
+            estadoPago.estado,
             `${simboloMoneda} ${item.totalNeto}`,
             item.celular,
             item.dni,
-            item.metodoPago.charAt(0) + item.metodoPago.slice(1).toLowerCase(),
             item.dateRecepcion.fecha,
             item.dateEntrega.fecha,
           ]);
         });
 
-        const productsColumn = worksheet.getColumn(5);
+        const productsColumn = worksheet.getColumn(4);
 
         worksheet.eachRow((row) => {
           row.alignment = { wrapText: true, horizontal: 'center', vertical: 'middle' };
@@ -118,7 +118,7 @@ const Mensual = ({ onClose }) => {
 
         const maxLineLengths = [];
         await worksheet.eachRow({ includeEmpty: true }, (row) => {
-          const cell = row.getCell(5); // Obtener la celda de la columna "Products"
+          const cell = row.getCell(4); // Obtener la celda de la columna "Products"
           const lines = cell.text.split('\n');
           let maxLength = 0;
           lines.forEach((line) => {
@@ -140,7 +140,7 @@ const Mensual = ({ onClose }) => {
           to: { row: totalRows, column: totalColumns },
         };
 
-        const HeaderProducts = worksheet.getCell('E1');
+        const HeaderProducts = worksheet.getCell('D1');
 
         productsColumn.alignment = {
           horizontal: 'left',
@@ -170,6 +170,7 @@ const Mensual = ({ onClose }) => {
 
   return (
     <div className="cr_monthly">
+      <h1 className="title">Exportar Reporte de Ordenes Mensual</h1>
       <MonthPickerInput
         style={{ position: 'relative' }}
         label="Ingrese Fecha"
@@ -188,4 +189,4 @@ const Mensual = ({ onClose }) => {
   );
 };
 
-export default Mensual;
+export default Ordenes;

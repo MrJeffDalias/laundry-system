@@ -282,8 +282,45 @@
                             .date-dh {
                                 position: relative;
                                 .hour-date {
-                                    input {
-                                        text-align: right;
+                                    position: relative;
+                                    width: 215px;
+                                    height: 36px;
+                                    font-size: 16px;
+                                    display: block;
+                                    text-align: end;
+                                    padding: 3px;
+                                    padding-top: 5px;
+                                    border: 2px solid silver;
+                                    padding-right: 0;
+                                    select {
+                                        outline: none;
+                                        color: #767676;
+                                        padding-right: 0;
+                                        text-align: center;
+                                        &:focus {
+                                            outline: none;
+                                        }
+                                        option {
+                                            text-align: center;
+                                            background-color: #eee;
+                                            color: #333;
+                                            padding-right: 0;
+                                        }
+                                    }
+                                    .react-time-picker {
+                                        padding-right: 0;
+                                    }
+                                    .react-time-picker__inputGroup__amPm {
+                                        width: 50px;
+                                        padding-bottom: 2px;
+                                    }
+                                    .react-time-picker__inputGroup__amPm {
+                                        -moz-appearance: none;
+                                        -webkit-appearance: none;
+                                        appearance: none;
+                                    }
+                                    .react-time-picker__wrapper {
+                                        border: none;
                                     }
                                 }
                                 .day-date {
@@ -300,6 +337,29 @@
                         .switches-container {
                             .switches-body {
                                 width: 10rem;
+                            }
+                        }
+                    }
+                    .info-process {
+                        width: 100%;
+                        padding: 10px;
+                        padding-bottom: 15px;
+                        padding-left: 20px;
+                        display: grid;
+                        border: 3px solid #7a7dbb;
+                        border-radius: 20px;
+                        margin: 15px 0;
+                        .mform {
+                            width: 80%;
+                            display: grid;
+                            gap: 15px;
+                            label {
+                                font-weight: 700;
+                                font-size: 16px;
+                                color: #7a7dbb;
+                            }
+                            input {
+                                color: #000;
                             }
                         }
                     }

@@ -30,13 +30,10 @@ const EndProcess = ({ IdCliente, onClose }) => {
   const dispatch = useDispatch();
 
   const [onAction, setOnAction] = useState('principal');
-  const [btnText, setBtnText] = useState();
 
   const InfoUsuario = useSelector((state) => state.user.infoUsuario);
   const infoCliente = useSelector((state) => state.orden.registered.find((item) => item._id === IdCliente));
 
-  //const PENDIENTE = "pendiente";
-  const PAGADO = 'Pagado';
   const estadoPago = handleGetInfoPago(infoCliente.ListPago, infoCliente.totalNeto);
 
   const handleCancelarEntrega = () => {
@@ -180,9 +177,6 @@ const EndProcess = ({ IdCliente, onClose }) => {
     tipoTrasporte: '',
     mDevolucion: '',
   };
-  useEffect(() => {
-    setBtnText(infoCliente.Pago === PAGADO ? 'Entregar' : 'Pagar y Entregar');
-  }, [infoCliente]);
 
   useEffect(() => {
     socket.on('server:orderUpdated:child', (data) => {

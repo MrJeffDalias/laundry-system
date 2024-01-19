@@ -5,6 +5,8 @@ import { NumberInput, TextInput, Modal } from '@mantine/core';
 import { DateInput, TimeInput } from '@mantine/dates';
 import { Autocomplete } from '@mantine/core';
 import React, { useEffect, useState } from 'react';
+import TimePicker from 'react-time-picker';
+import 'react-time-picker/dist/TimePicker.css';
 
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
@@ -807,13 +809,23 @@ const OrdenServicio = ({ mode, action, onAction, iEdit, onReturn, iDelivery }) =
                 <div className="content-hour">
                   <label htmlFor=""></label>
                   <div className="date-dh">
-                    <TimeInput
+                    <TimePicker
                       className="hour-date"
-                      name="dayhour"
-                      disabled={iEdit ? (iEdit.modeEditAll ? false : true) : false}
-                      tabIndex="6"
-                      value={formik.values.dayhour}
-                      onChange={formik.handleChange}
+                      onChange={(newTime) => {
+                        const timeMoment = moment(newTime, 'HH:mm');
+                        const timeString = timeMoment.format('HH:mm');
+                        formik.setFieldValue('dayhour', timeString);
+                      }}
+                      value={
+                        moment(formik.values.dayhour, 'HH:mm').isValid()
+                          ? moment(formik.values.dayhour, 'HH:mm').toDate()
+                          : null
+                      }
+                      amPmAriaLabel="Select AM/PM" // Aquí debe ir una cadena descriptiva
+                      clockIcon={null} // Esto oculta el icono del reloj, si lo deseas
+                      clearIcon={null} // Esto oculta el icono de limpieza, si lo deseas
+                      disableClock={true}
+                      format="h:mm a"
                     />
                     <label className="day-date">{handleGetDay(formik.values.datePrevista)}</label>
                   </div>
