@@ -306,7 +306,7 @@ const Ticket = React.forwardRef((props, ref) => {
                     </div>
                   </div>
                   <div className="notice">
-                    <span>CÁNJELO EN SU PRÓXIMA ORDEN</span>
+                    <span>CÁNJEELO EN SU PRÓXIMA ORDEN</span>
                   </div>
                   <h2 className="vigencia" style={{ float: 'right', fontSize: '0.85em' }}>
                     Vencimiento : {calcularFechaFutura(promo.vigencia)}
