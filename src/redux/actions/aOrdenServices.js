@@ -92,10 +92,13 @@ export const UpdateOrdenServices = createAsyncThunk(
 
 export const CancelEntrega_OrdenService = createAsyncThunk(
   'service_order/CancelEntrega_OrdenService',
-  async (id, { dispatch }) => {
+  async ({ IdCliente, info }, { dispatch }) => {
     try {
       // Lógica para cancelar entrega en el backend
-      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/lava-ya/cancel-entrega/${id}`);
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/api/lava-ya/cancel-entrega/${IdCliente}`,
+        info
+      );
 
       const res = response.data;
 

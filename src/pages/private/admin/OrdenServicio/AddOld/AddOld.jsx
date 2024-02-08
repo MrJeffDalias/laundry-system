@@ -35,7 +35,7 @@ import axios from 'axios';
 
 import { AddOrdenServices } from '../../../../../redux/actions/aOrdenServices';
 import { documento, ingresoDigital, nameImpuesto, simboloMoneda } from '../../../../../services/global';
-import { handleGetInfoPago } from '../../../../../utils/functions';
+import { DateCurrent, handleGetInfoPago } from '../../../../../utils/functions';
 import ButtonSwitch from '../../../../../components/PRIVATE/MetodoPago/ButtonSwitch/ButtonSwitch';
 
 const AddOld = () => {
@@ -199,8 +199,10 @@ const AddOld = () => {
         ...p,
         date: {
           fecha: tFecha(formik.values.dateRecojo),
-          hora: tHora(formik.values.dateRecojo),
+          hora: DateCurrent().format3,
         },
+        idCuadre: '',
+        idUser: InfoUsuario._id,
       };
     });
 

@@ -32,6 +32,8 @@ const Delivery = () => {
 
   const infoCodigo = useSelector((state) => state.codigo.infoCodigo);
   const { lastRegister } = useSelector((state) => state.orden);
+
+  const { lastCuadre, cuadreActual } = useSelector((state) => state.cuadre);
   const infoPrendas = useSelector((state) => state.prenda.infoPrendas);
   const { InfoImpuesto } = useSelector((state) => state.modificadores);
 
@@ -61,6 +63,12 @@ const Delivery = () => {
       fecha: DateCurrent().format4,
       hora: DateCurrent().format3,
       monto: values.price,
+      idUser: InfoUsuario._id,
+      idCuadre: cuadreActual?.saved
+        ? lastCuadre?._id === cuadreActual?._id && lastCuadre?.infoUser._id === cuadreActual?.infoUser._id
+          ? cuadreActual?._id
+          : ''
+        : '',
     };
 
     const infoRecibo = {
@@ -166,6 +174,12 @@ const Delivery = () => {
       fecha: DateCurrent().format4,
       hora: DateCurrent().format3,
       monto: values.price,
+      idUser: InfoUsuario._id,
+      idCuadre: cuadreActual?.saved
+        ? lastCuadre?._id === cuadreActual?._id && lastCuadre?.infoUser._id === cuadreActual?.infoUser._id
+          ? cuadreActual?._id
+          : ''
+        : '',
     };
 
     setInfoDelivery(infoDelivery);

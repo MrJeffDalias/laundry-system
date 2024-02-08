@@ -19,7 +19,6 @@ import { simboloMoneda } from '../../../../services/global';
 const Gasto = ({ onClose }) => {
   const dispatch = useDispatch();
   const InfoUsuario = useSelector((state) => state.user.infoUsuario);
-  const { error } = useSelector((state) => state.gasto);
 
   const validationSchema = Yup.object().shape({
     descripcion: Yup.string().required('Ingrese motivo de gasto'),
@@ -53,7 +52,7 @@ const Gasto = ({ onClose }) => {
         }}
         validationSchema={validationSchema}
         onSubmit={(values, { setSubmitting }) => {
-          openModal(values);
+          openModal({ ...values, idUser: InfoUsuario._id, idCuadre: '' });
           setSubmitting(false);
         }}
       >

@@ -52,8 +52,7 @@ import LoaderSpiner from '../../components/LoaderSpinner/LoaderSpiner';
 import { useRef } from 'react';
 import { socket } from '../../utils/socket/connect';
 import { LS_newDelivery, LS_updateDelivery } from '../../redux/states/delivery';
-import { GetLastCuadre } from '../../redux/actions/aCuadre';
-import { updateLastCuadre } from '../../redux/states/cuadre';
+import { GetCuadre } from '../../redux/actions/aCuadre';
 
 const PrivateMasterLayout = (props) => {
   const [opened, { open, close }] = useDisclosure(false);
@@ -75,6 +74,7 @@ const PrivateMasterLayout = (props) => {
   const infoPuntos = useSelector((state) => state.modificadores.InfoPuntos);
   const infoPromocion = useSelector((state) => state.promocion.infoPromocion);
   const infoNegocio = useSelector((state) => state.negocio.infoNegocio);
+  const infoCuadreActual = useSelector((state) => state.cuadre.cuadreActual);
 
   const [loading, setLoading] = useState(true);
 
@@ -111,9 +111,9 @@ const PrivateMasterLayout = (props) => {
             promises.push(dispatch(GetCodigos()));
           }
 
-          if (lastCuadre === null) {
-            promises.push(dispatch(GetLastCuadre()));
-          }
+          // if (lastCuadre === null) {
+          //   promises.push(dispatch(GetLastCuadre()));
+          // }
 
           if (infoPrendas.length === 0) {
             promises.push(dispatch(GetPrendas()));
@@ -137,6 +137,10 @@ const PrivateMasterLayout = (props) => {
 
           if (Object.keys(infoNegocio).length === 0) {
             promises.push(dispatch(GetInfoNegocio()));
+          }
+
+          if (infoCuadreActual === null) {
+            promises.push(dispatch(GetCuadre({ date: DateCurrent().format4, id: InfoUsuario._id })));
           }
 
           // Esperar a que todas las promesas se resuelvan
@@ -226,7 +230,7 @@ const PrivateMasterLayout = (props) => {
       dispatch(LS_updateListOrder(data));
     });
     socket.on('server:changeCuadre', (data) => {
-      dispatch(updateLastCuadre(data));
+      dispatch(GetCuadre({ date: DateCurrent().format4, id: InfoUsuario._id }));
     });
     // DELIVERY
     //-- New
@@ -342,7 +346,9 @@ const PrivateMasterLayout = (props) => {
             <HeaderCoord />
             {InfoUsuario.rol === Roles.ADMIN ? <HeaderAdmin /> : null}
           </div>
-          <section className="body_pcp">{props.children}</section>
+          <section className={`body_pcp ${InfoUsuario.rol === Roles.ADMIN ? 'mode-admin' : 'mode-user'}`}>
+            {props.children}
+          </section>
 
           <div id="btn-extra" className="btn-action-extra">
             {InfoUsuario.rol !== Roles.PERS ? (

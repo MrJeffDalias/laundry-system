@@ -569,7 +569,6 @@ const List = () => {
                     setChangePago(false);
                   } else if (
                     row.original.EstadoPrenda === 'entregado' &&
-                    row.original.FechaPago !== DateCurrent().format4 &&
                     row.original.FechaEntrega !== DateCurrent().format4
                   ) {
                     setChangePago(false);
