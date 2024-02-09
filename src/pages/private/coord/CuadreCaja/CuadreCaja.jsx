@@ -299,6 +299,7 @@ const CuadreCaja = () => {
           ...infoCuadre.date,
           hora: DateCurrent().format3,
         },
+        cajaFinal: cajaFinal,
         egresos: { delivery, gastos },
         ingresos: {
           efectivo: pedidosPagadosEfectivo,
