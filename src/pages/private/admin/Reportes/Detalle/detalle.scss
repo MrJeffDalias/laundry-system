@@ -170,7 +170,7 @@
             overflow: hidden;
             display: grid;
             place-items: center;
-            grid-template-columns: 100px max-content;
+            grid-template-columns: max-content max-content;
             border-radius: 20px 0 0 20px;
             .title {
                 padding: 3px;
@@ -183,6 +183,16 @@
                 text-align: center;
                 background: #fff;
                 border-radius: 20px 0 0 20px;
+            }
+            span {
+                padding: 0 10px;
+            }
+        }
+        .attent {
+            background: #42bd9a;
+
+            .monto {
+                border: solid 1px #42bd9a;
             }
         }
         .fact {
@@ -213,12 +223,15 @@
         }
     }
     .list-pagos {
-        scale: 0.8;
         position: relative;
+        width: max-content;
+        min-width: 500px;
+        display: grid;
+        place-items: center;
         .title {
-            text-align: center;
             position: absolute;
             top: -7px;
+            text-align: center;
             width: 300px;
             background: #7b7b7b;
             color: #fff;
@@ -227,14 +240,16 @@
         }
         ul {
             background: #87f0c8;
-            padding: 20px;
+            padding: 10px;
             border-radius: 20px;
             display: grid;
             gap: 10px;
+            min-width: 500px;
             li {
                 display: grid;
-                grid-template-columns: 30px 300px 70px 120px 50px;
+                grid-template-columns: 25px max-content 70px 80px 110px 30px;
                 padding: 10px;
+                place-items: center;
             }
             .i-pago {
                 background: #ffffff85;
@@ -255,11 +270,12 @@
                 &::before {
                     content: "✓";
                 }
+                // span {
+                //     font-size: 15px;
+                // }
             }
             .i-final {
-                // .if-estado {
-                //     text-align: left;
-                // }
+                margin: auto;
                 .if-monto {
                     position: relative;
                     .l-info {
@@ -285,6 +301,7 @@
             padding: 8px;
             border: 1px solid #ccc;
         }
+
         .md-pago {
             position: absolute;
             right: 0px;

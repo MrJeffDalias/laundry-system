@@ -29,6 +29,7 @@ const Details = ({ IdCliente }) => {
 
   const infoCliente = useSelector((state) => state.orden.registered.find((item) => item._id === IdCliente));
   const InfoUsuario = useSelector((state) => state.user.infoUsuario);
+  const ListUsuarios = useSelector((state) => state.user.listUsuario);
 
   const iDelivery = useSelector((state) => state.delivery.infoDeliveryID);
   const iAnulado = useSelector((state) => state.anular.anuladoId);
@@ -42,6 +43,11 @@ const Details = ({ IdCliente }) => {
   const handleHour = (hora) => {
     const hora12 = moment(hora, 'HH:mm').format('h:mm A');
     return hora12;
+  };
+
+  const handleInfoUser = (idUser) => {
+    const usuario = ListUsuarios.find((usuario) => usuario._id === idUser);
+    return usuario ? usuario.name.split(' ')[0] : 'No Encontrado';
   };
 
   useEffect(() => {
@@ -180,6 +186,10 @@ const Details = ({ IdCliente }) => {
                     <td>{infoCliente.descuento}</td>
                   </tr>
                 ) : null}
+                <tr>
+                  <td>Atendido Por :</td>
+                  <td>{infoCliente.attendedBy.name.split(' ')[0]}</td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -199,6 +209,7 @@ const Details = ({ IdCliente }) => {
                     {p.total}
                   </span>
                   <span className="_metodopago">{cLetter(p.metodoPago)}</span>
+                  <span>{handleInfoUser(p.idUser)}</span>
                   <span className="_ico">
                     {p.metodoPago === 'Tarjeta' ? (
                       <i className="fa-solid fa-credit-card" />
@@ -210,7 +221,7 @@ const Details = ({ IdCliente }) => {
                   </span>
                 </li>
               ))}
-              <li className="i-final">
+              <div className="i-final">
                 <span></span>
                 <span className="if-estado"></span>
                 <span className="if-monto">
@@ -225,7 +236,7 @@ const Details = ({ IdCliente }) => {
                   </div>
                   <div>
                     <div className="l-info">
-                      <span>Estado :</span>
+                      <span>Pago :</span>
                     </div>
                     <div> {statePago?.estado}</div>
                   </div>
@@ -241,7 +252,8 @@ const Details = ({ IdCliente }) => {
                     </div>
                   ) : null}
                 </span>
-              </li>
+                <span></span>
+              </div>
             </ul>
           </div>
           {infoCliente.Modalidad === 'Delivery' && iDelivery ? (
