@@ -364,11 +364,11 @@ const CuadreCaja = () => {
   };
 
   const chageInfo = (info) => {
-    setOnLoading(true);
+    // setOnLoading(true);
     setIState(info);
     setTimeout(() => {
       setOnLoading(false);
-    }, 1500);
+    }, 2500);
   };
 
   useEffect(() => {
@@ -541,12 +541,6 @@ const CuadreCaja = () => {
   useEffect(() => {
     setStateCuadre((totalCaja - montoPrevisto).toFixed(2));
   }, [iState, totalCaja, montoPrevisto]);
-
-  // useEffect(() => {
-  //   if (iState) {
-  //     setOnLoading(false);
-  //   }
-  // }, [iState]);
 
   useEffect(() => {
     socket.on('server:cGasto', (data) => {

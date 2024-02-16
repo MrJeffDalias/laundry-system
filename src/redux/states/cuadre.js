@@ -18,8 +18,11 @@ const cuadre = createSlice({
     updateLastCuadre: (state, action) => {
       state.lastCuadre = action.payload;
     },
-    setCuadrePrincipal: (state, action) => {
-      state.cuadrePrincipal = action.payload;
+    clearInfoCuadre: (state) => {
+      state.infoCuadre = null;
+      state.lastCuadre = null;
+      state.infoBase = null;
+      state.cuadreActual = null;
     },
   },
   extraReducers: (builder) => {
@@ -101,5 +104,5 @@ const cuadre = createSlice({
   },
 });
 
-export const { LS_updateCuadre, updateLastCuadre, setCuadrePrincipal } = cuadre.actions;
+export const { LS_updateCuadre, updateLastCuadre, clearInfoCuadre } = cuadre.actions;
 export default cuadre.reducer;

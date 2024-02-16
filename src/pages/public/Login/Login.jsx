@@ -19,6 +19,7 @@ import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { Notify } from '../../../utils/notify/Notify';
 import { socket } from '../../../utils/socket/connect';
+import { clearInfoCuadre } from '../../../redux/states/cuadre';
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -30,6 +31,7 @@ const Login = () => {
   useEffect(() => {
     //clearLocalStorage(userKey);
     dispatch(resetUser());
+    dispatch(clearInfoCuadre());
     //navigate(`/${PublicRoutes.LOGIN}`, { replace: true });
   }, [dispatch]);
 
