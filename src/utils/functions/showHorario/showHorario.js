@@ -1,7 +1,7 @@
 import moment from 'moment';
 
 export function DiasAttencion(diasPresentes) {
-  const diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+  const diasSemana = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
   // Copiar y ordenar los días presentes
   const diasOrdenados = [...diasPresentes];
@@ -41,8 +41,8 @@ export function DiasAttencion(diasPresentes) {
     // Más de un día faltante
     if (esConsecutivo(diasFaltantes)) {
       // Encontramos el día inicial y el día final
-      const init = Math.max(...diasFaltantes) === 7 ? 'Lunes' : diasSemana[Math.max(...diasFaltantes) % 7];
-      const end = Math.min(...diasFaltantes) === 1 ? 'Domingo' : diasSemana[Math.min(...diasFaltantes) - 2];
+      const init = Math.max(...diasFaltantes) === 7 ? 'Lun' : diasSemana[Math.max(...diasFaltantes) % 7];
+      const end = Math.min(...diasFaltantes) === 1 ? 'Dom' : diasSemana[Math.min(...diasFaltantes) - 2];
 
       dRes = `${init} a ${end}`;
     } else {
@@ -67,7 +67,7 @@ export function DiasAttencion(diasPresentes) {
       dRes = res;
     }
   } else {
-    dRes = `Lunes a Domingo`;
+    dRes = `Lun a Dom`;
   }
 
   return dRes;

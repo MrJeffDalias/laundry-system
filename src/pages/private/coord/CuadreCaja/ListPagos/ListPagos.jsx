@@ -1,10 +1,20 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable no-unused-vars */
-import React from 'react';
-import styled from 'styled-components';
-import { ingresoDigital } from '../../../../../services/global';
+import React, { useEffect } from "react";
+import styled from "styled-components";
+import { ingresoDigital } from "../../../../../services/global";
+import { DateFormat24h } from "../../../../../utils/functions";
+import { Text } from "@mantine/core";
+import { ReactComponent as Eliminar } from "../../../../../utils/img/OrdenServicio/eliminar.svg";
+import "./listPagos.scss";
+import { modals } from "@mantine/modals";
+import { useDispatch, useSelector } from "react-redux";
+import { DeleteGasto } from "../../../../../redux/actions/aGasto";
+import { useState } from "react";
 
-const InfoExtra = styled.div`
+const InfoExtra = styled.div.withConfig({
+  shouldForwardProp: (prop) => prop !== "showDelete",
+})`
   display: flex;
   justify-content: space-between;
 
@@ -178,7 +188,10 @@ const InfoExtra = styled.div`
   .daily-expenses {
     table {
       tr {
-        grid-template-columns: 300px 250px 100px;
+        grid-template-columns: ${({ showDelete }) =>
+          showDelete === "y"
+            ? "200px 300px 80px 100px 50px"
+            : "200px 300px 80px 100px"};
       }
       thead {
         tr {
@@ -205,9 +218,38 @@ const InfoExtra = styled.div`
   }
 `;
 
-const ListPagos = ({ iGastos, iClienteEfectivo, iClienteTarjeta, iClienteTransferencia }) => {
+const ListPagos = ({
+  type,
+  iGastos,
+  iClienteEfectivo,
+  iClienteTarjeta,
+  iClienteTransferencia,
+  savedActivated,
+}) => {
+  const dispatch = useDispatch();
+  const InfoUsuario = useSelector((state) => state.user.infoUsuario);
+  const [showDelete, setShowDelete] = useState("n");
+
+  const handleNoPagar = (id) => {
+    modals.openConfirmModal({
+      title: "Elimiancion de Gasto",
+      centered: true,
+      children: <Text size="sm">¿Estás seguro de Eliminar este Gasto?</Text>,
+      labels: { confirm: "Si", cancel: "No" },
+      confirmProps: { color: "red" },
+      onCancel: () => console.log("eliminacion de Gasto cancelado"),
+      onConfirm: () => {
+        dispatch(DeleteGasto({ id, rol: InfoUsuario.rol }));
+      },
+    });
+  };
+
+  useEffect(() => {
+    setShowDelete(!savedActivated && type !== "view" ? "y" : "n");
+  }, [savedActivated, type]);
+
   return (
-    <InfoExtra>
+    <InfoExtra showDelete={showDelete}>
       <div className="efectivo tb-info">
         <span>EFECTIVO</span>
         {iClienteEfectivo ? (
@@ -223,10 +265,10 @@ const ListPagos = ({ iGastos, iClienteEfectivo, iClienteTarjeta, iClienteTransfe
               </thead>
               <tbody>
                 {iClienteEfectivo.map((cliente, index) => (
-                  <tr key={index} className={`${cliente.estadoPrenda === 'anulado' ? 'mode-anulado' : null}`}>
-                    <td>{cliente.codRecibo}</td>
+                  <tr key={index}>
+                    <td>{cliente.orden}</td>
                     <td>{cliente.Modalidad}</td>
-                    <td>{cliente.Nombre}</td>
+                    <td>{cliente.nombre}</td>
                     <td>{cliente.total}</td>
                   </tr>
                 ))}
@@ -243,23 +285,33 @@ const ListPagos = ({ iGastos, iClienteEfectivo, iClienteTarjeta, iClienteTransfe
               <table>
                 <thead>
                   <tr>
-                    <th>Descripcion</th>
-                    <th>Fecha y Hora</th>
+                    <th>Tipo</th>
+                    <th>Motivo</th>
+                    <th>Hora</th>
                     <th>Monto</th>
+                    {savedActivated === false && type !== "view" ? (
+                      <th></th>
+                    ) : null}
                   </tr>
                 </thead>
                 <tbody>
                   {iGastos.map((gasto, index) => (
-                    <tr
-                      key={index}
-                      //style={{ background: gasto._state === 'anulado' ? '#ff686847' : '#fff' }}
-                      className={`${gasto._state === 'anulado' ? 'mode-anulado' : null}`}
-                    >
-                      <td>{gasto.descripcion}</td>
-                      <td>
-                        {gasto.fecha} / {gasto.hora}
-                      </td>
+                    <tr className="fila" key={index}>
+                      <td>{gasto.tipo}</td>
+                      <td>{gasto.motivo}</td>
+                      <td>{DateFormat24h(gasto.date.hora)}</td>
                       <td>{gasto.monto}</td>
+
+                      {savedActivated === false && type !== "view" ? (
+                        <td
+                          className="delete-row"
+                          onClick={() => {
+                            handleNoPagar(gasto._id);
+                          }}
+                        >
+                          <Eliminar className="ic-d" />
+                        </td>
+                      ) : null}
                     </tr>
                   ))}
                 </tbody>
@@ -282,14 +334,10 @@ const ListPagos = ({ iGastos, iClienteEfectivo, iClienteTarjeta, iClienteTransfe
                 </thead>
                 <tbody>
                   {iClienteTransferencia.map((cliente, index) => (
-                    <tr
-                      key={index}
-                      // style={{ background: cliente.estadoPrenda === 'anulado' ? '#ff686847' : '#fff' }}
-                      className={`${cliente.estadoPrenda === 'anulado' ? 'mode-anulado' : null}`}
-                    >
-                      <td>{cliente.codRecibo}</td>
+                    <tr key={index}>
+                      <td>{cliente.orden}</td>
                       <td>{cliente.Modalidad}</td>
-                      <td>{cliente.Nombre}</td>
+                      <td>{cliente.nombre}</td>
                       <td>{cliente.total}</td>
                     </tr>
                   ))}
@@ -313,10 +361,17 @@ const ListPagos = ({ iGastos, iClienteEfectivo, iClienteTarjeta, iClienteTransfe
                 </thead>
                 <tbody>
                   {iClienteTarjeta.map((cliente, index) => (
-                    <tr key={index} className={`${cliente.estadoPrenda === 'anulado' ? 'mode-anulado' : null}`}>
-                      <td>{cliente.codRecibo}</td>
+                    <tr
+                      key={index}
+                      className={`${
+                        cliente.estadoPrenda === "anulado"
+                          ? "mode-anulado"
+                          : null
+                      }`}
+                    >
+                      <td>{cliente.orden}</td>
                       <td>{cliente.Modalidad}</td>
-                      <td>{cliente.Nombre}</td>
+                      <td>{cliente.nombre}</td>
                       <td>{cliente.total}</td>
                     </tr>
                   ))}

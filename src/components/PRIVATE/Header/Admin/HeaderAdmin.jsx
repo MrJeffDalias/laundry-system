@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { PrivateRoutes } from '../../../../models/index';
 import './headerAdmin.scss';
-import { oldRecords } from '../../../../services/global';
+import { oldOrder } from '../../../../services/global';
 
 const HeaderAdmin = () => {
   const [stateHam2, setStateHam2] = useState(true);
@@ -110,7 +110,7 @@ const HeaderAdmin = () => {
           <li>
             <Link to={`./${PrivateRoutes.SETTING}`}>Ajustes</Link>
           </li>
-          {oldRecords ? (
+          {oldOrder ? (
             <li>
               <Link to={`./${PrivateRoutes.REGISTER_OLDS}`}>Registro Antiguos</Link>
             </li>

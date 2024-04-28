@@ -1,12 +1,14 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useLayoutEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { Link, useLocation } from 'react-router-dom';
-import { PrivateRoutes, Roles } from '../../../../models/index';
-import Logout from '../../Logout/Logout';
-import './headerCoord.scss';
-import { oldRecords } from '../../../../services/global';
+import React, { useEffect, useLayoutEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { Link, useLocation } from "react-router-dom";
+import { PrivateRoutes, Roles } from "../../../../models/index";
+import Logout from "../../Logout/Logout";
+import "./headerCoord.scss";
+import { oldOrder } from "../../../../services/global";
+
+import { ReactComponent as Logo } from "../../../../utils/img/Logo/logo.svg";
 
 const HeaderUser = () => {
   const userState = useSelector((store) => store.user.infoUsuario);
@@ -17,10 +19,10 @@ const HeaderUser = () => {
   const InfoNegocio = useSelector((state) => state.negocio.infoNegocio);
 
   const toggleNavBar = () => {
-    const navBar = document.querySelector('.nav-bar');
-    const hamburger = document.querySelector('.hamburger');
-    navBar.classList.toggle('active');
-    hamburger.classList.toggle('active');
+    const navBar = document.querySelector(".nav-bar");
+    const hamburger = document.querySelector(".hamburger");
+    navBar.classList.toggle("active");
+    hamburger.classList.toggle("active");
   };
 
   const handleResize = () => {
@@ -30,33 +32,38 @@ const HeaderUser = () => {
   };
 
   const initializeHeaderUser = () => {
-    const navbarp = document.getElementById('n-general');
-    const tabsp = navbarp.querySelectorAll('li');
+    const navbarp = document.getElementById("n-general");
+    const tabsp = navbarp.querySelectorAll("li");
 
-    const activeItemp = navbarp.querySelector('.active');
-    const horiSelector = document.querySelector('.hori-selector');
+    const activeItemp = navbarp.querySelector(".active");
+    const horiSelector = document.querySelector(".hori-selector");
     const currentPath = location.pathname;
 
-    const hrefs = Array.from(navbarp.querySelectorAll('li a'), (link) => link.getAttribute('href'));
+    const hrefs = Array.from(navbarp.querySelectorAll("li a"), (link) =>
+      link.getAttribute("href")
+    );
 
-    hrefs.push('/');
+    hrefs.push("/");
 
     if (hrefs.includes(currentPath)) {
-      activeItemp?.classList?.remove('active');
+      activeItemp?.classList?.remove("active");
 
       for (const tab of tabsp) {
-        const link = tab.querySelector('a');
-        const linkHref = link?.getAttribute('href');
+        const link = tab.querySelector("a");
+        const linkHref = link?.getAttribute("href");
 
-        if ((currentPath === '/' && linkHref === '/list-clientes') || currentPath === linkHref) {
-          horiSelector.style.display = 'block';
-          tab.classList.add('active');
+        if (
+          (currentPath === "/" && linkHref === "/list-clientes") ||
+          currentPath === linkHref
+        ) {
+          horiSelector.style.display = "block";
+          tab.classList.add("active");
         }
       }
 
-      const navbar = document.getElementById('n-general');
-      const tabs = navbar.querySelectorAll('li');
-      const activeItem = navbar.querySelector('.active');
+      const navbar = document.getElementById("n-general");
+      const tabs = navbar.querySelectorAll("li");
+      const activeItem = navbar.querySelector(".active");
 
       const activeItemHeight = activeItem.offsetHeight;
       const activeItemWidth = activeItem.offsetWidth;
@@ -69,11 +76,11 @@ const HeaderUser = () => {
       horiSelector.style.width = `${activeItemWidth}px`;
 
       for (const item of tabs) {
-        item.addEventListener('click', () => {
+        item.addEventListener("click", () => {
           for (const menuItem of tabs) {
-            menuItem.classList.remove('active');
+            menuItem.classList.remove("active");
           }
-          item.classList.add('active');
+          item.classList.add("active");
 
           if (stateHam) {
             setStateHam(false);
@@ -87,21 +94,21 @@ const HeaderUser = () => {
           horiSelector.style.left = `${itemLeft}px`;
           //horiSelector.style.height = `${itemHeight - (isSmallScreen ? 0 : 10)}px`;
 
-          horiSelector.style.width = isSmallScreen ? '100%' : `${itemWidth}px`;
+          horiSelector.style.width = isSmallScreen ? "100%" : `${itemWidth}px`;
         });
       }
     } else {
-      activeItemp?.classList?.remove('active');
-      horiSelector.style.display = 'none';
+      activeItemp?.classList?.remove("active");
+      horiSelector.style.display = "none";
     }
   };
 
   useEffect(() => {
     initializeHeaderUser();
-    window.addEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
 
     return () => {
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("resize", handleResize);
     };
   }, [location.pathname]);
 
@@ -110,15 +117,13 @@ const HeaderUser = () => {
       setIsSmallScreen(window.innerWidth <= 900);
     };
 
-    window.addEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
   }, []);
 
   return (
     <header className="header-general">
       <div className="logo">
-        {/* <div className={`logo ${userState.rol === Roles.ADMIN ? 'admin-style' : 'coord-style'}`}> */}
-        {/* <img src={INFO_COMPANY.logo_dir} alt="" /> */}
-        <h1>{InfoNegocio?.name}</h1>
+        <Logo className="svg-logo" />
       </div>
       <button type="button" className="hamburger" onClick={toggleNavBar}>
         <div className="line" />
@@ -132,20 +137,34 @@ const HeaderUser = () => {
             <div className="right" />
           </div>
           <li>
-            <Link to={`./${PrivateRoutes.LIST_ORDER_SERVICE}`} className="active">
+            <Link to={`./${PrivateRoutes.PERSONAL}`} className="active">
+              ASISTENCIA
+            </Link>
+          </li>
+          <li>
+            <Link
+              to={`./${PrivateRoutes.LIST_ORDER_SERVICE}`}
+              className="active"
+            >
               Listado de Pedido
             </Link>
           </li>
-          {userState.rol === Roles.ADMIN || userState.rol === Roles.COORD ? (
+          {userState.rol === Roles.ADMIN ||
+          userState.rol === Roles.GERENTE ||
+          userState.rol === Roles.COORD ? (
             <>
               <li>
                 <Link to={`./${PrivateRoutes.REGISTER_TIENDA}`}>Tienda</Link>
               </li>
               <li>
-                <Link to={`./${PrivateRoutes.REGISTER_DELIVERY}`}>Delivery</Link>
+                <Link to={`./${PrivateRoutes.REGISTER_DELIVERY}`}>
+                  Delivery
+                </Link>
               </li>
               <li>
-                <Link to={`./${PrivateRoutes.CUADRE_CAJA}`}>Cuadre de Caja</Link>
+                <Link to={`./${PrivateRoutes.CUADRE_CAJA}`}>
+                  Cuadre de Caja
+                </Link>
               </li>
               {/* <li>
                 <Link to={`./${PrivateRoutes.REGISTER_PENDIENTE}`}>Pendientes</Link>
@@ -153,7 +172,8 @@ const HeaderUser = () => {
             </>
           ) : null}
 
-          {userState.rol === Roles.ADMIN && isSmallScreen ? (
+          {(userState.rol === Roles.ADMIN || userState.rol === Roles.GERENTE) &&
+          isSmallScreen ? (
             <>
               <li>
                 <Link to={`./${PrivateRoutes.PROMOCIONES}`}>Promociones</Link>
@@ -167,9 +187,11 @@ const HeaderUser = () => {
               <li className="pages-admin">
                 <Link to={`./${PrivateRoutes.SETTING}`}>Ajustes</Link>
               </li>
-              {oldRecords ? (
+              {oldOrder ? (
                 <li>
-                  <Link to={`./${PrivateRoutes.REGISTER_OLDS}`}>Registro Antiguos</Link>
+                  <Link to={`./${PrivateRoutes.REGISTER_OLDS}`}>
+                    Registro Antiguos
+                  </Link>
                 </li>
               ) : null}
             </>

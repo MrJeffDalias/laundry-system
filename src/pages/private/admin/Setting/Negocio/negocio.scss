@@ -13,12 +13,14 @@
         padding: 15px;
 
         .data {
+            width: 100%;
             display: grid;
-            width: 300px;
-            // gap: 50px;
-            .info-base {
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            .columns-paralelo {
                 .input-item {
                     position: relative;
+                    width: 250px;
                     .show {
                         background: #56df8f;
                     }
