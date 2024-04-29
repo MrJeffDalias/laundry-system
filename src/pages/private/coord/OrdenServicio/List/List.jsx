@@ -340,7 +340,7 @@ const List = () => {
         );
 
         const listItems = d.Items.filter(
-          (item) => item.identificador !== iDelivery._id
+          (item) => item.identificador !== iDelivery?._id
         );
         const estadoPago = handleGetInfoPago(d.ListPago, d.totalNeto);
 
