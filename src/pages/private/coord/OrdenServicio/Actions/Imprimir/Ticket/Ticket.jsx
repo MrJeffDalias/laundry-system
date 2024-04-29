@@ -8,8 +8,8 @@ import {
   handleGetInfoPago,
   roundDecimal,
 } from "../../../../../../../utils/functions";
-// import "./ticket50.scss";
-import "./ticket80.scss";
+import "./ticket50.scss";
+// import "./ticket80.scss";
 
 import Pet from "./pet.jpg";
 import AhorroPet from "./petAhorro.jpg";
@@ -25,7 +25,7 @@ import {
 import { useSelector } from "react-redux";
 
 const Ticket = React.forwardRef((props, ref) => {
-  const sizePaper80 = true;
+  const sizePaper80 = false;
   const { showDescripcion, tipoTicket, infoOrden, InfoNegocio } = props;
   const [listPromos, setListPromos] = useState([]);
   const [sPago, setSPago] = useState();
