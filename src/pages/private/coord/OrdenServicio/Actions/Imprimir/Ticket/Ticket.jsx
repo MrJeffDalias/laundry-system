@@ -327,7 +327,7 @@ const Ticket = React.forwardRef((props, ref) => {
                   </thead>
                   <tbody>
                     {infoOrden.Items.filter(
-                      (p) => p.identificador !== getInfoDelivery()._id
+                      (p) => p.identificador !== getInfoDelivery()?._id
                     ).map((p, index) => (
                       <React.Fragment key={`${infoOrden._id}-${index}`}>
                         <tr>

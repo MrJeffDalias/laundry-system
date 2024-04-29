@@ -123,7 +123,7 @@ const OrdenServicio = ({
         "Debe haber al menos un item - Delivery no cuenta",
         function (value) {
           return value.some(
-            (item) => item.identificador !== getInfoDelivery()._id
+            (item) => item.identificador !== getInfoDelivery()?._id
           );
         }
       )
@@ -140,7 +140,7 @@ const OrdenServicio = ({
     return Items.map((item) => {
       // Transforma cada item a la nueva estructura
       const isDelivery =
-        getInfoDelivery()._id === item.identificador ? true : false;
+        getInfoDelivery()?._id === item.identificador ? true : false;
       return {
         cantidad: item.cantidad,
         identificador: item.identificador,
@@ -191,14 +191,14 @@ const OrdenServicio = ({
         : mode === "Delivery"
         ? [
             {
-              identificador: getInfoDelivery()._id,
+              identificador: getInfoDelivery()?._id,
               tipo: "servicio",
               cantidad: 1,
               item: "Delivery",
               simboloMedida: "vj",
               descripcion: "Recojo y Entrega",
-              price: getInfoDelivery().precioVenta,
-              total: getInfoDelivery().precioVenta,
+              price: getInfoDelivery()?.precioVenta,
+              total: getInfoDelivery()?.precioVenta,
               disable: {
                 cantidad: true,
                 item: true,
@@ -1410,7 +1410,7 @@ const OrdenServicio = ({
                         if (
                           (!iEdit || iEdit?.estado === "reservado") &&
                           formik.values.items[index].identificador !==
-                            getInfoDelivery()._id
+                            getInfoDelivery()?._id
                         ) {
                           const updatedItems = [...formik.values.items];
                           updatedItems.splice(index, 1);
