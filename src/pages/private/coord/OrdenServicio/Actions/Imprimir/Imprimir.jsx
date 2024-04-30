@@ -43,9 +43,9 @@ const index = () => {
       const mensaje = `¡Hola *${infoOrden.Nombre}* ! Le saluda la *Lavanderia ${
         InfoNegocio.name
       }*, Su Orden es la *#${infoOrden.codRecibo}*, ${
-        infoOrden.Pago === "Completo"
+        sPago.estado === "Completo"
           ? `ya esta *PAGADO*`
-          : infoOrden.Pago === "Incompleto"
+          : sPago.estado === "Incompleto"
           ? `con monto pendiente de *${simboloMoneda}${sPago.falta}*`
           : `con monto a pagar *${simboloMoneda}${infoOrden.totalNeto}*`
       }, su entrega es el día ${DateDetail(
