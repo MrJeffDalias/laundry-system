@@ -433,16 +433,10 @@ const Ticket = React.forwardRef((props, ref) => {
                 <div className="monto-final">
                   <h2>
                     Pago : {simboloMoneda}
-                    {
-                      handleGetInfoPago(infoOrden.ListPago, infoOrden.totalNeto)
-                        .pago
-                    }
+                    {sPago?.pago}
                   </h2>
                   <h3 className={`${infoOrden.factura ? null : "sf"} estado`}>
-                    {handleGetInfoPago(
-                      infoOrden.ListPago,
-                      infoOrden.totalNeto
-                    ).estado.toUpperCase()}
+                    {sPago?.estado.toUpperCase()}
                   </h3>
                   {infoOrden.factura ? (
                     <h2 className="cangeo-factura">
