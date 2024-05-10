@@ -317,7 +317,7 @@ const Ticket = React.forwardRef((props, ref) => {
                     <tr>
                       <th></th>
                       <th>Item</th>
-                      <th>Servicio</th>
+                      <th>Cantidad</th>
                       {!tipoTicket ? (
                         <>
                           <th>Total</th>
