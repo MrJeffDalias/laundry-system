@@ -118,3 +118,17 @@ li {
 ::-webkit-scrollbar-thumb:hover {
   background: #555; /* Color del mango al pasar el cursor sobre él */
 }
+
+.mantine-Modal-content {
+  min-width: 200px;
+  max-width: 100%;
+}
+.mantine-Modal-header {
+  position: relative;
+  padding-bottom: 0 !important;
+}
+.mantine-Modal-header button {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+}

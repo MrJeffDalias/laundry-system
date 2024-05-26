@@ -64,14 +64,22 @@ import { GetTipoGastos } from "../../redux/actions/aTipoGasto";
 import { updateRegistrosNCuadrados } from "../../redux/states/cuadre";
 
 const PrivateMasterLayout = (props) => {
-  const [opened, { open, close }] = useDisclosure(false);
+  const [
+    mMessageGeneral,
+    { open: openMessageGeneral, close: closeMessageGeneral },
+  ] = useDisclosure(false);
+
+  const [
+    mAccionGeneral,
+    { open: openAccionGeneral, close: closeAccionGeneral },
+  ] = useDisclosure(false);
+
   const InfoUsuario = useSelector((store) => store.user.infoUsuario);
   const [data, setData] = useState();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const [mGasto, setMGasto] = useState(false);
-  const [mInformeDiario, setMInformeDiario] = useState(false);
+  const [mTipoAccionGeneral, setMTipoAccionGeneral] = useState(null);
 
   const { reserved } = useSelector((state) => state.orden);
 
@@ -95,9 +103,9 @@ const PrivateMasterLayout = (props) => {
 
   const _handleShowModal = (title, message, ico) => {
     setData({ title, message, ico });
-    open();
+    openMessageGeneral();
     setTimeout(() => {
-      close();
+      closeMessageGeneral();
       navigate(`/${PublicRoutes.LOGIN}`, { replace: true });
     }, 5000);
   };
@@ -415,7 +423,8 @@ const PrivateMasterLayout = (props) => {
               <button
                 className="btn-gasto"
                 onClick={() => {
-                  setMGasto(true);
+                  setMTipoAccionGeneral("Gasto");
+                  openAccionGeneral();
                 }}
               >
                 Agregar Gasto
@@ -429,39 +438,35 @@ const PrivateMasterLayout = (props) => {
             <button
               className="btn-informe"
               onClick={() => {
-                setMInformeDiario(true);
+                setMTipoAccionGeneral("Informe");
+                openAccionGeneral();
               }}
             >
               Informe Diario
             </button>
           </div>
-
-          {mInformeDiario ? (
-            <Portal
-              onClose={() => {
-                setMInformeDiario(false);
-              }}
-            >
-              <ReporteDiario onClose={setMInformeDiario} />
-            </Portal>
-          ) : null}
-          {mGasto ? (
-            <Portal
-              onClose={() => {
-                setMGasto(false);
-              }}
-            >
-              <Gasto onClose={setMGasto} />
-            </Portal>
-          ) : null}
         </>
       )}
       <Modal
-        opened={opened}
+        opened={mAccionGeneral}
+        onClose={closeAccionGeneral}
+        closeOnClickOutside={true}
+        size="auto"
+        scrollAreaComponent={ScrollArea.Autosize}
+        centered
+      >
+        {mTipoAccionGeneral === "Gasto" ? (
+          <Gasto onClose={closeAccionGeneral} />
+        ) : mTipoAccionGeneral === "Informe" ? (
+          <ReporteDiario onClose={closeAccionGeneral} />
+        ) : null}
+      </Modal>
+      <Modal
+        opened={mMessageGeneral}
         closeOnClickOutside={false}
         closeOnEscape={false}
         withCloseButton={false}
-        onClose={close}
+        onClose={closeMessageGeneral}
         size={350}
         title={false}
         scrollAreaComponent={ScrollArea.Autosize}

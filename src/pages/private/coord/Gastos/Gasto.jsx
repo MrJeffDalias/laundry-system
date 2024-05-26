@@ -86,7 +86,7 @@ const Gasto = ({ onClose }) => {
 
   const handleSaveGasto = (infoGasto) => {
     dispatch(AddGasto({ infoGasto, rol: InfoUsuario.rol }));
-    onClose(false);
+    onClose();
   };
 
   useEffect(() => {
@@ -101,8 +101,8 @@ const Gasto = ({ onClose }) => {
   return (
     <div>
       <form onSubmit={formik.handleSubmit} className="container-gasto">
+        <h1>Gastos</h1>
         <div className="info-gasto">
-          <h1>Gastos</h1>
           <div className="input-g">
             <Select
               name="idTipoGasto"

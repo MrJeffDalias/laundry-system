@@ -3,7 +3,7 @@
 /* eslint-disable no-unused-vars */
 import axios from "axios";
 import ExcelJS from "exceljs";
-import { Modal, Text, Textarea } from "@mantine/core";
+import { Modal, ScrollArea, Text, Textarea } from "@mantine/core";
 import { MantineReactTable } from "mantine-react-table";
 import React, { useEffect, useMemo, useState } from "react";
 import { useDisclosure } from "@mantine/hooks";
@@ -28,6 +28,7 @@ const Pendientes = () => {
   const [rowSelection, setRowSelection] = useState([]);
   const [orderSelection, setOrderSelection] = useState([]);
   const [opened, { open, close }] = useDisclosure(false);
+
   const [infoPendientes, setInfoPendientes] = useState([]);
   const [inWarehouse, setInWarehouse] = useState([]);
   const [key, setKey] = useState(0);
@@ -606,6 +607,7 @@ const Pendientes = () => {
                 onDetail?.Recibo
               })`
         }
+        scrollAreaComponent={ScrollArea.Autosize}
         centered
       >
         {onModal === "Almacenados" ? (
