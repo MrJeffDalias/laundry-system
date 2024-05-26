@@ -1,7 +1,7 @@
 // Zona Horaria
 export const timeZone = "America/Mexico_City";
-// Mostrar Opcion de Registrar Ordenes Antiguas
-export const oldOrder = true;
+// Factura
+export const showFactura = false;
 // Tipo de Moneda
 export const tipoMoneda = "MXN";
 // Formato de la moneda (separacion de miles - decimales) segun la configuracion regional
