@@ -65,10 +65,18 @@ const Asistencia = () => {
 
   const generateListDay = (info) => {
     const fechaActual = moment();
-    const primerDiaDelMes = moment(fechaActual).startOf("month");
-    const diasEnElMes = fechaActual.date();
+    const primerDiaDelMes = moment(datePrincipal).startOf("month");
+    let finalDiaDelMes;
 
-    return Array.from({ length: diasEnElMes }, (_, index) => {
+    // Si estamos en el mes actual, finalDiaDelMes será el día actual
+    if (moment().isSame(datePrincipal, "month")) {
+      finalDiaDelMes = fechaActual.date();
+    } else {
+      // Si estamos en un mes anterior al actual, obtenemos el último día del mes anterior
+      finalDiaDelMes = moment(datePrincipal).endOf("month").date();
+    }
+
+    return Array.from({ length: finalDiaDelMes }, (_, index) => {
       const fecha = moment(primerDiaDelMes)
         .add(index, "days")
         .format("YYYY-MM-DD");
@@ -178,20 +186,26 @@ const Asistencia = () => {
     []
   );
 
-  const confirmEditInfoPersonal = (data) =>
+  const confirmEditInfoPersonal = (data) => {
+    let confirmationEnabled = true;
+
     modals.openConfirmModal({
-      title: "Registro de Personal",
+      title: "Actualizar Informacion de Personal",
       centered: true,
       children: (
-        <Text size="sm">¿ Estas seguro de Agregar este Personal Nuevo ?</Text>
+        <Text size="sm">¿ Estas seguro de Actualizar este Personal ?</Text>
       ),
       labels: { confirm: "Si", cancel: "No" },
       confirmProps: { color: "green" },
       //onCancel: () => console.log("Cancelado"),
       onConfirm: () => {
-        handleUpdateInfoPersonal(data, id);
+        if (confirmationEnabled) {
+          confirmationEnabled = false;
+          handleUpdateInfoPersonal(data, id);
+        }
       },
     });
+  };
 
   const hangleGetInfoAsistencia = async () => {
     try {
@@ -204,7 +218,7 @@ const Asistencia = () => {
       );
       setInfoPersonal(response.data);
     } catch (error) {
-      console.error("Error al obtener los gastos:", error);
+      console.error("Error al obtener asistencias:", error);
     }
   };
 
@@ -236,10 +250,19 @@ const Asistencia = () => {
       }
 
       // Actualizar listAsistencia
-      const newListAsistencia = infoPersonal.listAsistencia.map((day) => {
-        const { newInfoDay } = response.data;
-        return day.fecha === newInfoDay.fecha ? newInfoDay : day;
-      });
+      let newListAsistencia = [...updatedInfoPersonal.listAsistencia];
+      const { newInfoDay } = response.data;
+      const existingDayIndex = newListAsistencia.findIndex(
+        (day) => day.fecha === newInfoDay.fecha
+      );
+
+      if (existingDayIndex !== -1) {
+        // Si se encontró un día con la misma fecha, remplazarlo
+        newListAsistencia[existingDayIndex] = newInfoDay;
+      } else {
+        // Si no se encontró un día con la misma fecha, agregar newInfoDay
+        newListAsistencia.push(newInfoDay);
+      }
       updatedInfoPersonal.listAsistencia = newListAsistencia;
 
       // Actualizar infoPersonal
@@ -525,6 +548,7 @@ const Asistencia = () => {
         ...conteo,
       });
       const ListDaysAsistidos = generateListDay(infoPersonal?.listAsistencia);
+
       setListDays(ListDaysAsistidos);
       formik.setFieldValue("name", infoPersonal.name);
       formik.setFieldValue("horaIngreso", infoPersonal.horaIngreso);
@@ -532,7 +556,7 @@ const Asistencia = () => {
       formik.setFieldValue("pagoByHour", infoPersonal.pagoByHour);
       formik.setFieldValue("dateNacimiento", infoPersonal.dateNacimiento);
     }
-  }, [infoPersonal]);
+  }, [infoPersonal, datePrincipal]);
 
   useEffect(() => {
     if (rowPick) {
@@ -734,6 +758,7 @@ const Asistencia = () => {
                 style={{ position: "relative", margin: "auto 0" }}
                 label="Ingrese Fecha"
                 placeholder="Pick date"
+                maxDate={new Date()}
                 value={datePrincipal}
                 onChange={(date) => {
                   setDatePrincipal(date);

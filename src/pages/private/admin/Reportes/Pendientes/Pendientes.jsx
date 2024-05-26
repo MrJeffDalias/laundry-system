@@ -3,7 +3,7 @@
 /* eslint-disable no-unused-vars */
 import axios from "axios";
 import ExcelJS from "exceljs";
-import { Modal, ScrollArea, Text, Textarea } from "@mantine/core";
+import { Modal, Text, Textarea } from "@mantine/core";
 import { MantineReactTable } from "mantine-react-table";
 import React, { useEffect, useMemo, useState } from "react";
 import { useDisclosure } from "@mantine/hooks";
@@ -23,7 +23,6 @@ import { Notify } from "../../../../../utils/notify/Notify";
 import { socket } from "../../../../../utils/socket/connect";
 import { useDispatch, useSelector } from "react-redux";
 import { LS_updateListOrder } from "../../../../../redux/states/service_order";
-import { simboloMoneda } from "../../../../../services/global";
 
 const Pendientes = () => {
   const [rowSelection, setRowSelection] = useState([]);
@@ -404,6 +403,8 @@ const Pendientes = () => {
   };
 
   const openConfirmacion = async () => {
+    let confirmationEnabled = true;
+
     modals.openConfirmModal({
       title: "Registro de Factura",
       centered: true,
@@ -419,7 +420,12 @@ const Pendientes = () => {
       labels: { confirm: "Si", cancel: "No" },
       confirmProps: { color: "green" },
       //onCancel: () => console.log("cancelado"),
-      onConfirm: () => handleChangeLocation_OrderService(),
+      onConfirm: () => {
+        if (confirmationEnabled) {
+          confirmationEnabled = false;
+          handleChangeLocation_OrderService();
+        }
+      },
     });
   };
 
@@ -592,8 +598,7 @@ const Pendientes = () => {
           setOnDetail();
           setOnModal("");
         }}
-        size={550}
-        scrollAreaComponent={ScrollArea.Autosize}
+        size="auto"
         title={
           onModal === "Almacenados"
             ? "Ordenes Almacenadas correctamente"

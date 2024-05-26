@@ -3,9 +3,6 @@
 $sizeBase: 16px;
 $widthG_mm: 50mm;
 $sImgPromo: 90px;
-// $sizeBase: 20px;
-// $widthG_mm: 80mm;
-// $sImgPromo: 120px;
 $sH1: 1em;
 $sH0: 1.5em;
 $sH2: 0.85em;
@@ -25,7 +22,6 @@ $sText: 0.8em;
   .body-orden-service {
     .receipt_header {
       padding-bottom: 5px;
-      border-bottom: 0.2mm solid #000;
       text-align: center;
       .name-bussiness {
         border-bottom: 0.2mm solid #000;
@@ -36,10 +32,40 @@ $sText: 0.8em;
           stroke: #000;
         }
       }
+      .i-negocio {
+        border-bottom: 0.2mm solid #000;
+        display: grid;
+        font-weight: 600;
+        font-size: $sText;
+        line-height: 1;
+        padding: 3px;
+        padding-bottom: 5px;
+        span {
+          &:first-child {
+            padding: 1px 0;
+            padding-bottom: 3px;
+            text-decoration: underline;
+          }
+        }
+        .flexd {
+          display: flex !important;
+          justify-content: space-around;
+          span {
+            text-decoration: none;
+          }
+        }
+      }
 
       .info-table {
         width: 100%;
         border-collapse: collapse;
+        .tlf-space-50 {
+          display: grid;
+        }
+        .hor-space-80 {
+          display: grid;
+        }
+
         tr {
           td {
             font-weight: 600;
@@ -51,7 +77,7 @@ $sText: 0.8em;
             }
 
             &:first-child {
-              width: 15mm;
+              width: 18mm;
               padding-right: 15px;
             }
           }
@@ -274,6 +300,54 @@ $sText: 0.8em;
           .img-pet {
             img {
               width: $sImgPromo;
+            }
+          }
+        }
+        .info-point {
+          display: grid;
+          .body-ahorro {
+            display: flex;
+            gap: 5px;
+            justify-content: space-between;
+          }
+          span {
+            // font-size: $sText;
+            font-size: 12px;
+            font-weight: 600;
+          }
+          .detalle-puntos {
+            width: 100%;
+            border: 1px solid #000;
+            border-radius: 10px;
+            margin: 10px 0;
+            display: grid;
+            place-items: center;
+            .content-items {
+              padding-top: 10px;
+              padding-bottom: 5px;
+              display: grid;
+              gap: 5px;
+              .item-dt {
+                display: grid;
+                place-items: center;
+              }
+            }
+            span {
+              font-size: 13px;
+              font-weight: 600;
+              color: #000;
+            }
+            strong {
+              font-size: 17px;
+              font-weight: 600;
+              color: #000;
+            }
+
+            .info-extra-dt {
+              border-top: 1px solid #000;
+              text-align: center;
+              padding: 5px 17px;
+              line-height: 1;
             }
           }
         }

@@ -66,7 +66,8 @@ const Gasto = ({ onClose }) => {
     },
   });
 
-  const openModal = (values) =>
+  const openModal = (values) => {
+    let confirmationEnabled = true;
     modals.openConfirmModal({
       title: "Confirmar Gasto",
       centered: true,
@@ -74,8 +75,14 @@ const Gasto = ({ onClose }) => {
       labels: { confirm: "Si", cancel: "No" },
       confirmProps: { color: "red" },
       onCancel: () => console.log("Cancel"),
-      onConfirm: () => handleSaveGasto(values),
+      onConfirm: () => {
+        if (confirmationEnabled) {
+          confirmationEnabled = false;
+          handleSaveGasto(values);
+        }
+      },
     });
+  };
 
   const handleSaveGasto = (infoGasto) => {
     dispatch(AddGasto({ infoGasto, rol: InfoUsuario.rol }));
@@ -142,6 +149,7 @@ const Gasto = ({ onClose }) => {
                     )
                   : ""
               }
+              min={0}
               placeholder="Ingrese Monto"
               precision={2}
               step={0.05}

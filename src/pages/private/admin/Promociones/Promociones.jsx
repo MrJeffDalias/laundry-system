@@ -164,7 +164,9 @@ const Promociones = () => {
     []
   );
 
-  const validDeletePromocion = (id) =>
+  const validDeletePromocion = (id) => {
+    let confirmationEnabled = true;
+
     modals.openConfirmModal({
       title: "Eliminar Promocion",
       centered: true,
@@ -175,10 +177,14 @@ const Promociones = () => {
       confirmProps: { color: "red" },
       //onCancel: () => console.log("Cancelado"),
       onConfirm: () => {
-        dispatch(DeletePromocion(id));
-        handleCloseAction();
+        if (confirmationEnabled) {
+          confirmationEnabled = false;
+          dispatch(DeletePromocion(id));
+          handleCloseAction();
+        }
       },
     });
+  };
 
   const handleAddPromocion = async (promo) => {
     try {
@@ -437,7 +443,7 @@ const Promociones = () => {
                     setAction("Edit");
                   }}
                 >
-                  Actualizar Servicio
+                  Actualizar Promocion
                 </Button>
 
                 <Button
@@ -455,7 +461,7 @@ const Promociones = () => {
                   style={{ background: "#e76565" }}
                   onClick={() => validDeletePromocion(rowPick._id)}
                 >
-                  Eliminar Servicio
+                  Eliminar Promocion
                 </Button>
               </div>
             </div>

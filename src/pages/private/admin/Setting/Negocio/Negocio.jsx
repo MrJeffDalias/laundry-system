@@ -6,13 +6,13 @@ import { useDispatch, useSelector } from "react-redux";
 import { useFormik } from "formik";
 import "./negocio.scss";
 import { modals } from "@mantine/modals";
-import { Button, MultiSelect, Text } from "@mantine/core";
+import { Button, MultiSelect, Switch, Text } from "@mantine/core";
 import { TextInput } from "@mantine/core";
 import { TimeInput } from "@mantine/dates";
 import { PrivateRoutes, Roles } from "../../../../../models";
 import { useNavigate } from "react-router-dom";
 import { UpdateInfoNegocio } from "../../../../../redux/actions/aNegocio";
-
+import SwtichDimension from "../../../../../components/SwitchDimension/SwitchDimension";
 const Negocio = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -27,11 +27,13 @@ const Negocio = () => {
     initialValues: {
       name: InfoNegocio.name,
       direccion: InfoNegocio.direccion,
-      numero: InfoNegocio.numero,
+      contacto: InfoNegocio.contacto,
       itemsAtajos: InfoNegocio.itemsAtajos,
       rolQAnulan: InfoNegocio.rolQAnulan,
+      funcionamiento: InfoNegocio.funcionamiento,
       horario: InfoNegocio.horario,
-      estado: InfoNegocio.estado,
+      oldOrder: InfoNegocio.oldOrder,
+      hasMobility: InfoNegocio.hasMobility,
     },
     //validationSchema: validationSchema,
     onSubmit: (values, { setSubmitting }) => {
@@ -40,7 +42,9 @@ const Negocio = () => {
     },
   });
 
-  const openModal = (data) =>
+  const openModal = (data) => {
+    let confirmationEnabled = true;
+
     modals.openConfirmModal({
       title: "Acttualizar Informacion de Negocio",
       centered: true,
@@ -52,20 +56,18 @@ const Negocio = () => {
       labels: { confirm: "Si", cancel: "No" },
       confirmProps: { color: "green" },
       onCancel: () => console.log("Cancelado"),
-      onConfirm: () => handleUpdateNegocio(data),
+      onConfirm: () => {
+        if (confirmationEnabled) {
+          confirmationEnabled = false;
+          handleUpdateNegocio(data);
+        }
+      },
     });
+  };
 
   const handleUpdateNegocio = (data) => {
     dispatch(UpdateInfoNegocio(data));
     navigate(`/${PrivateRoutes.PRIVATE}/${PrivateRoutes.LIST_ORDER_SERVICE}`);
-  };
-
-  const handleChangeDay = (day) => {
-    const dias = formik.values.horario?.dias;
-    const updatedDias = dias.includes(day)
-      ? dias.filter((d) => d !== day)
-      : [...dias, day];
-    formik.setFieldValue("horario.dias", updatedDias);
   };
 
   const getListServices = (servicios) => {
@@ -88,12 +90,42 @@ const Negocio = () => {
     }));
   };
 
+  const handleAddItem = (tipo) => {
+    const maxNumeros = 2;
+    const listToUpdate =
+      tipo === "contacto" ? formik.values.contacto : formik.values.horario;
+    const currentIndex = listToUpdate.length;
+
+    if (currentIndex < maxNumeros) {
+      const newItem =
+        tipo === "contacto"
+          ? { index: currentIndex, numero: "" }
+          : { index: currentIndex, horario: "" };
+      formik.setFieldValue(tipo, [...listToUpdate, newItem]);
+    }
+  };
+
+  const handleDeleteItem = (tipo, indexToDelete) => {
+    const listToUpdate =
+      tipo === "contacto" ? formik.values.contacto : formik.values.horario;
+
+    const updatedList = listToUpdate.filter(
+      (_, index) => index !== indexToDelete
+    );
+
+    formik.setFieldValue(tipo, updatedList);
+  };
+
   useEffect(() => {
     formik.setFieldValue("name", InfoNegocio.name);
     formik.setFieldValue("direccion", InfoNegocio.direccion);
-    formik.setFieldValue("numero", InfoNegocio.numero);
+    formik.setFieldValue("contacto", InfoNegocio.contacto);
+    formik.setFieldValue("itemsAtajos", InfoNegocio.itemsAtajos);
+    formik.setFieldValue("rolQAnulan", InfoNegocio.rolQAnulan);
+    formik.setFieldValue("funcionamiento", InfoNegocio.funcionamiento);
     formik.setFieldValue("horario", InfoNegocio.horario);
-    formik.setFieldValue("estado", InfoNegocio.estado);
+    formik.setFieldValue("oldOrder", InfoNegocio.oldOrder);
+    formik.setFieldValue("hasMobility", InfoNegocio.hasMobility);
   }, [InfoNegocio]);
 
   useEffect(() => {
@@ -106,182 +138,343 @@ const Negocio = () => {
     }
   }, [formik.values.rolQAnulan]);
 
-  const renderDayCell = (day) => (
-    <td key={day} onClick={() => handleChangeDay(day)}>
-      <div
-        className={`item-day ${
-          formik.values.horario?.dias.includes(day) ? "open" : "close"
-        }`}
-      >
-        <div className="day" />
-      </div>
-    </td>
-  );
-
   return (
     <div className="content-negocio">
       {Object.keys(InfoNegocio).length > 0 ? (
         <form onSubmit={formik.handleSubmit} className="form-info">
-          <h1>Informacion del Negocio</h1>
-          <div className="data">
-            <div className="columns-paralelo">
-              <div className="input-item">
-                <TextInput
-                  name="name"
-                  label="Nombre :"
-                  defaultValue={formik.values.name}
-                  placeholder="Ingrese Nombre del Negocio"
-                  autoComplete="off"
-                  required
-                  onChange={(e) => {
-                    formik.setFieldValue("name", e.target.value);
-                  }}
-                />
-                {/* {formik.errors.cantidadMin && formik.touched.cantidadMin && validIco(formik.errors.cantidadMin)} */}
-              </div>
-              <div className="input-item">
-                <TextInput
-                  name="direccion"
-                  label="direccion :"
-                  defaultValue={formik.values.direccion}
-                  placeholder="Ingrese Direccion"
-                  required
-                  autoComplete="off"
-                  onChange={(e) => {
-                    formik.setFieldValue("direccion", e.target.value);
-                  }}
-                />
-                {/* {formik.errors.cantidadMin && formik.touched.cantidadMin && validIco(formik.errors.cantidadMin)} */}
-              </div>
-              <div className="input-item">
-                <TextInput
-                  name="numero"
-                  label="Numero :"
-                  defaultValue={formik.values.numero?.info}
-                  placeholder="Ingrese Numero de contacto"
-                  autoComplete="off"
-                  required
-                  onChange={(e) => {
-                    formik.setFieldValue("numero.info", e.target.value);
-                  }}
-                />
-                <button
-                  className={`state-ii ${
-                    formik.values.numero?.state ? "show" : "hide"
-                  }`}
-                  type="button"
-                  onClick={() => {
-                    formik.setFieldValue(
-                      "numero.state",
-                      !formik.values.numero?.state
-                    );
-                  }}
-                >
-                  {formik.values.numero?.state ? (
-                    <i className="fa-solid fa-eye" />
-                  ) : (
-                    <i className="fa-solid fa-eye-slash" />
-                  )}
-                </button>
-                {/* {formik.errors.cantidadMin && formik.touched.cantidadMin && validIco(formik.errors.cantidadMin)} */}
+          <div className="body-negocio">
+            <div className="i-negocio">
+              <h1>Informacion del Negocio</h1>
+              <div className="data">
+                <div className="columns-paralelo">
+                  <div className="input-item">
+                    <TextInput
+                      name="name"
+                      label="Nombre :"
+                      defaultValue={formik.values.name}
+                      placeholder="Ingrese Nombre del Negocio"
+                      autoComplete="off"
+                      required
+                      onChange={(e) => {
+                        formik.setFieldValue("name", e.target.value);
+                      }}
+                    />
+                  </div>
+                  <div className="input-item">
+                    <TextInput
+                      name="direccion"
+                      label="Direccion :"
+                      defaultValue={formik.values.direccion}
+                      placeholder="Ingrese Direccion"
+                      required
+                      autoComplete="off"
+                      onChange={(e) => {
+                        formik.setFieldValue("direccion", e.target.value);
+                      }}
+                    />
+                  </div>
+                  <div className="input-item-switch">
+                    <SwtichDimension
+                      title="Registros Antiguos :"
+                      onSwitch="Activado"
+                      offSwitch="Desactivado"
+                      name="oldOrder"
+                      defaultValue={formik.values.oldOrder}
+                      handleChange={(value) => {
+                        formik.setFieldValue(
+                          "oldOrder",
+                          value === "Activado" ? true : false
+                        );
+                      }}
+                      // colorOn=""
+                      // colorOff=""
+                      // disabled=""
+                    />
+                    <SwtichDimension
+                      title="Mobilidad Propia :"
+                      onSwitch="SI"
+                      offSwitch="NO"
+                      name="hasMobility"
+                      defaultValue={formik.values.hasMobility}
+                      handleChange={(value) => {
+                        formik.setFieldValue(
+                          "hasMobility",
+                          value === "SI" ? true : false
+                        );
+                      }}
+                      colorOn="#5bc97d"
+                      // colorOff=""
+                      // disabled=""
+                    />
+                  </div>
+                </div>
+                <div className="columns-paralelo">
+                  <div className="input-list">
+                    {formik.values.contacto?.map((contacto, index) => (
+                      <div className="input-item" key={index}>
+                        <TextInput
+                          name={`contacto-${index}`}
+                          label={`Numero de Contacto :`}
+                          defaultValue={contacto?.numero}
+                          placeholder={`Ingrese Teléfono ${index + 1}`}
+                          autoComplete="off"
+                          maxLength={13}
+                          required
+                          autoFocus
+                          onChange={(e) => {
+                            formik.setFieldValue(
+                              `contacto.${index}.numero`,
+                              e.target.value
+                            );
+                          }}
+                        />
+                        {index === 0 ? (
+                          <button
+                            className={`state-ii add`}
+                            type="button"
+                            onClick={() => {
+                              handleAddItem("contacto");
+                            }}
+                          >
+                            <i className="fa-solid fa-plus" />
+                          </button>
+                        ) : (
+                          <button
+                            className={`state-ii delete`}
+                            type="button"
+                            onClick={() => handleDeleteItem("contacto", index)}
+                          >
+                            <i className="fa-solid fa-x" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                    {/* Este bloque solo se muestra si no hay datos agregados previamente */}
+                    {formik.values.contacto?.length === 0 && (
+                      <div className="input-item">
+                        <TextInput
+                          name={`contacto-0`}
+                          label="Numero de Contacto "
+                          defaultValue=""
+                          maxLength={35}
+                          placeholder="Ingrese Teléfono 1"
+                          autoComplete="off"
+                          required
+                          onChange={(e) => {
+                            formik.setFieldValue(`contacto`, [
+                              {
+                                index: 0,
+                                numero: e.target.value,
+                              },
+                            ]);
+                          }}
+                        />
+                        {formik.values.contacto[0]?.numero ? (
+                          <button
+                            className={`state-ii add`}
+                            type="button"
+                            onClick={() => {
+                              handleAddItem("contacto"); // Utilizamos la función handleAddItem para agregar un nuevo elemento
+                            }}
+                          >
+                            <i className="fa-solid fa-plus" />
+                          </button>
+                        ) : null}
+                      </div>
+                    )}
+                  </div>
+                  <div className="input-list">
+                    {formik.values.horario?.map((horario, index) => (
+                      <div className="input-item" key={index}>
+                        <TextInput
+                          name={`horario-${index}`}
+                          label={`Horario :`}
+                          defaultValue={horario?.horario}
+                          placeholder={`Ingrese Horario #${index + 1}`}
+                          autoComplete="off"
+                          autoFocus
+                          maxLength={35}
+                          required
+                          onChange={(e) => {
+                            formik.setFieldValue(
+                              `horario.${index}.horario`,
+                              e.target.value
+                            );
+                          }}
+                        />
+                        {index === 0 ? (
+                          <button
+                            className={`state-ii add`}
+                            type="button"
+                            onClick={() => {
+                              handleAddItem("horario");
+                            }}
+                          >
+                            <i className="fa-solid fa-plus" />
+                          </button>
+                        ) : (
+                          <button
+                            className={`state-ii delete`}
+                            type="button"
+                            onClick={() => handleDeleteItem("horario", index)}
+                          >
+                            <i className="fa-solid fa-x" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                    {/* Este bloque solo se muestra si no hay datos agregados previamente */}
+                    {formik.values.horario?.length === 0 && (
+                      <div className="input-item">
+                        <TextInput
+                          name={`horario-0`}
+                          label="Horario"
+                          defaultValue=""
+                          maxLength={35}
+                          placeholder="Ingrese Horario 1"
+                          autoComplete="off"
+                          required
+                          onChange={(e) => {
+                            formik.setFieldValue(`horario`, [
+                              {
+                                index: 0,
+                                horario: e.target.value,
+                              },
+                            ]);
+                          }}
+                        />
+                        {formik.values.horario[0].horario ? (
+                          <button
+                            className={`state-ii add`}
+                            type="button"
+                            onClick={() => {
+                              handleAddItem("horario");
+                            }}
+                          >
+                            <i className="fa-solid fa-plus" />
+                          </button>
+                        ) : null}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="columns-paralelo">
-              <div className="input-item">
-                <MultiSelect
-                  name="itemsAtajos"
-                  size="sm"
-                  label="Items de Atajos (2 max) :"
-                  value={formik.values.itemsAtajos}
-                  onChange={(e) => {
-                    formik.setFieldValue("itemsAtajos", e);
-                  }}
-                  placeholder="Escoge categoría"
-                  clearable
-                  maxSelectedValues={2}
-                  searchable
-                  data={getListServices(InfoServicios)}
-                  maxDropdownHeight={150}
-                  max={250}
-                />
-                {/* {formik.errors.cantidadMin && formik.touched.cantidadMin && validIco(formik.errors.cantidadMin)} */}
-              </div>
-              <div className="input-item">
-                <MultiSelect
-                  name="rolQAnulan"
-                  size="sm"
-                  label="Roles que Anulan:"
-                  value={formik.values.rolQAnulan}
-                  onChange={(e) => {
-                    formik.setFieldValue("rolQAnulan", e);
-                  }}
-                  placeholder="Escoge categoría"
-                  clearable
-                  maxSelectedValues={3}
-                  searchable
-                  data={[
-                    { value: Roles.ADMIN, label: "Administrador" },
-                    { value: Roles.GERENTE, label: "Gerente" },
-                    { value: Roles.COORD, label: "Coordinador" },
-                  ]}
-                  maxDropdownHeight={150}
-                  max={250}
-                />
-                {/* {formik.errors.cantidadMin && formik.touched.cantidadMin && validIco(formik.errors.cantidadMin)} */}
+            <div className="i-sistema">
+              <h1>Informacion del Sistema</h1>
+              <div className="data">
+                <div className="columns-paralelo">
+                  <div className="input-item">
+                    <MultiSelect
+                      name="itemsAtajos"
+                      size="sm"
+                      label="Items de Atajos (2 max) :"
+                      value={formik.values.itemsAtajos}
+                      onChange={(e) => {
+                        formik.setFieldValue("itemsAtajos", e);
+                      }}
+                      placeholder="Escoge categoría"
+                      clearable
+                      maxSelectedValues={2}
+                      searchable
+                      data={getListServices(InfoServicios)}
+                      maxDropdownHeight={150}
+                      max={250}
+                    />
+                  </div>
+                  <div className="input-item">
+                    <MultiSelect
+                      name="rolQAnulan"
+                      size="sm"
+                      label="Roles que Anulan:"
+                      value={formik.values.rolQAnulan}
+                      onChange={(e) => {
+                        formik.setFieldValue("rolQAnulan", e);
+                      }}
+                      placeholder="Escoge categoría"
+                      clearable
+                      maxSelectedValues={3}
+                      searchable
+                      data={[
+                        { value: Roles.ADMIN, label: "Administrador" },
+                        { value: Roles.GERENTE, label: "Gerente" },
+                        { value: Roles.COORD, label: "Coordinador" },
+                      ]}
+                      maxDropdownHeight={150}
+                      max={250}
+                    />
+                  </div>
+                </div>
+                <div className="columns-paralelo">
+                  <div className="input-horario">
+                    <span>Horario de Funcionamiento</span>
+                    <table className="t-horario">
+                      <thead>
+                        <tr>
+                          <th>Hora</th>
+                          <th>Actividad</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>
+                            <div className="horario">
+                              <TimeInput
+                                name="inicio"
+                                required
+                                defaultValue={
+                                  formik.values.funcionamiento?.horas.inicio
+                                }
+                                onChange={(e) => {
+                                  formik.setFieldValue(
+                                    "funcionamiento.horas.inicio",
+                                    e.target.value
+                                  );
+                                }}
+                              />
+                              <TimeInput
+                                required
+                                name="fin"
+                                defaultValue={
+                                  formik.values.funcionamiento?.horas.fin
+                                }
+                                onChange={(e) => {
+                                  formik.setFieldValue(
+                                    "funcionamiento.horas.fin",
+                                    e.target.value
+                                  );
+                                }}
+                              />
+                            </div>
+                          </td>
+                          <td
+                            onClick={() =>
+                              formik.setFieldValue(
+                                "funcionamiento.actividad",
+                                !formik.values.funcionamiento?.actividad
+                              )
+                            }
+                          >
+                            <div
+                              className={`item-day ${
+                                formik.values.funcionamiento?.actividad
+                                  ? "open"
+                                  : "close"
+                              }`}
+                            >
+                              <div className="day" />
+                            </div>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-          <div>
-            <h2>Horario de Atencion</h2>
-            <table className="t-horario">
-              <thead>
-                <tr>
-                  <th>Período</th>
-                  <th>Lunes</th>
-                  <th>Martes</th>
-                  <th>Miércoles</th>
-                  <th>Jueves</th>
-                  <th>Viernes</th>
-                  <th>Sábado</th>
-                  <th>Domingo</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>
-                    <div className="horario">
-                      <TimeInput
-                        name="inicio"
-                        required
-                        defaultValue={formik.values.horario?.horas.inicio}
-                        onChange={(e) => {
-                          formik.setFieldValue(
-                            "horario.horas.inicio",
-                            e.target.value
-                          );
-                        }}
-                      />
-                      <TimeInput
-                        required
-                        name="fin"
-                        defaultValue={formik.values.horario?.horas.fin}
-                        onChange={(e) => {
-                          formik.setFieldValue(
-                            "horario.horas.fin",
-                            e.target.value
-                          );
-                        }}
-                      />
-                    </div>
-                  </td>
-                  {Array.from({ length: 7 }, (_, day) =>
-                    renderDayCell(day + 1)
-                  )}
-                </tr>
-              </tbody>
-            </table>
           </div>
           <Button
+            className="btn-save"
             type="submit"
             variant="gradient"
             gradient={{ from: "indigo", to: "cyan" }}
