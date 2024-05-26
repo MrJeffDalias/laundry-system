@@ -398,6 +398,7 @@ const OrdenServicio = ({
       iEdit?.estado === "reservado";
 
     const infoOrden = {
+      codRecibo: iCodigo,
       dateRecepcion: {
         fecha: tFecha(info.dateRecojo),
         hora: tHora(info.dateRecojo),

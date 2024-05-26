@@ -125,7 +125,6 @@ li {
 }
 .mantine-Modal-header {
   position: relative;
-  padding-bottom: 0 !important;
 }
 .mantine-Modal-header button {
   position: absolute;

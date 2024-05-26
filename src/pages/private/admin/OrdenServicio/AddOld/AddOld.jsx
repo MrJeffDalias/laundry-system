@@ -468,7 +468,6 @@ const AddOld = () => {
                     name="codigo"
                     label="Codigo :"
                     placeholder="N° Talonario"
-                    formatter={(value) => formatThousandsSeparator(value)}
                     value={formik.values.codigo}
                     precision={0}
                     onChange={(e) => {
